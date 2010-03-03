@@ -9,7 +9,7 @@
   <review status="experimental" notes="beta"/>
 
   <depend package="pr2_machine"/>
-  <depend package="ANN"/>
+  <depend package="ANN_doors"/>
 
   <depend package="roscpp" />
   <depend package="tf"/>

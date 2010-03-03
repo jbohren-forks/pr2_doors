@@ -1,0 +1,15 @@
+<package>
+  <description brief="door_msgs">
+    Messages for door opening
+  </description>
+  <author>Wim Meeussen</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://pr.willowgarage.com/wiki</url>
+  <depend package="geometry_msgs"/>
+  <depend package="actionlib_msgs"/>
+  <export>
+    <cpp cflags="-I${prefix}/msg/cpp"/>
+  </export>
+</package>
+

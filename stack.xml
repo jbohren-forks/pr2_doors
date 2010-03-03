@@ -1,0 +1,26 @@
+<stack>
+  <description brief="pr2_doors">The pr2_doors stack provides the building blocks and integration to allow the PR2 to autonomously detect and open doors.</description>
+  <author>Maintained by Wim Meeussen</author>
+  <license>BSD</license>  
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/pr2_doors</url>
+  <depend stack="common" /> <!-- actionlib -->
+  <depend stack="common_msgs" /> <!-- sensor_msgs, actionlib_msgs, geometry_msgs, diagnostic_msgs -->
+  <depend stack="diagnostics" /> <!-- diagnostic_updater -->
+  <depend stack="geometry" /> <!-- kdl, tf, angles -->
+  <depend stack="image_pipeline" /> <!-- stereo_msgs -->
+  <depend stack="laser_pipeline" /> <!-- laser_assembler -->
+  <depend stack="motion_planning_common" /> <!-- mapping_msgs -->
+  <depend stack="navigation" /> <!-- move_base_msgs, base_local_planner, costmap_2d -->
+  <depend stack="pr2_common" /> <!-- pr2_machine, pr2_msgs -->
+  <depend stack="pr2_common_actions" /> <!-- pr2_arm_ik_action, pr2_common_action_msgs, pr2_tilt_laser_profile -->
+  <depend stack="pr2_controllers" /> <!-- control_toolbox, pr2_controllers_msgs -->
+  <depend stack="pr2_mechanism" /> <!-- pr2_controller_manager, pr2_mechanism_model, realtime_tools, pr2_controller_interface -->
+  <depend stack="pr2_navigation" /> <!-- pr2_navigation_teleop, pr2_navigation_perception, pr2_navigation_local -->
+  <depend stack="ros" /> <!-- std_srvs, std_msgs, roscpp -->
+  <depend stack="semantic_mapping" /> <!-- point_cloud_mapping -->
+  <depend stack="vision_opencv" /> <!-- opencv2, cv_bridge -->
+  <depend stack="visualization_common" /> <!-- visualization_msgs -->
+  <depend stack="wg_common" /> <!-- willow_maps -->
+
+</stack>

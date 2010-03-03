@@ -1,0 +1,20 @@
+<launch>
+
+<!-- Door action -->
+  <include file="$(find pr2_doors_actions)/launch/door_actions.xml" />
+
+<!-- Navigation -->
+  <include file="$(find pr2_doors_executive)/config/navigation.xml" />
+
+<!-- Controllers -->
+  <include file="$(find pr2_doors_executive)/config/controllers.xml" />
+
+<!-- Perception -->
+  <include file="$(find pr2_doors_executive)/config/perception.xml" />
+
+<!-- Safety -->
+  <node pkg="pr2_tuck_arms_action" type="tuck_arms.py" name="tuck_arms_action" output="screen">
+    <param name="controller_name" type="string" value="arm_controller" />
+  </node>
+
+</launch>

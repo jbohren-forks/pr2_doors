@@ -40,7 +40,3 @@ rosbuild_add_executable(trigger_doors_opener
 		       src/action_open_door.cpp
                       )
 
-rosbuild_add_executable(test_executive
-		       test/test_executive.cpp
-                      )
-

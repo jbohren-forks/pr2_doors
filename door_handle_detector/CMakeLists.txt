@@ -10,12 +10,38 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 # door detector
 rosbuild_add_executable (doors_detector_laser
                         src/geometric_helper.cpp
+                        src/cloud_geometry/nearest.cpp
+                        src/cloud_geometry/statistics.cpp
+                        src/cloud_geometry/areas.cpp
+                        src/cloud_geometry/point.cpp
+                        src/cloud_geometry/intersections.cpp
+                        src/cloud_geometry/distances.cpp
+                        src/cloud_geometry/transforms.cpp
+                        src/cloud_kdtree/kdtree_ann.cpp
+                        src/sample_consensus/sac_model_oriented_line.cpp
+                        src/sample_consensus/ransac.cpp
+                        src/sample_consensus/sac_model_plane.cpp
+                        src/sample_consensus/sac_model_line.cpp
+                        src/sample_consensus/sac_model.cpp
                         src/doors_detector.cpp
                        )
 
 # handle detector
 rosbuild_add_executable (handle_detector_laser
                         src/geometric_helper.cpp
+                        src/cloud_geometry/nearest.cpp
+                        src/cloud_geometry/statistics.cpp
+                        src/cloud_geometry/areas.cpp
+                        src/cloud_geometry/point.cpp
+                        src/cloud_geometry/intersections.cpp
+                        src/cloud_geometry/distances.cpp
+                        src/cloud_geometry/transforms.cpp
+                        src/cloud_kdtree/kdtree_ann.cpp
+                        src/sample_consensus/sac_model_oriented_line.cpp
+                        src/sample_consensus/ransac.cpp
+                        src/sample_consensus/sac_model_plane.cpp
+                        src/sample_consensus/sac_model_line.cpp
+                        src/sample_consensus/sac_model.cpp
                         src/handle_detector.cpp
                        )
 

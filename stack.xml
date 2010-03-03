@@ -1,7 +1,7 @@
 <stack>
   <description brief="pr2_doors">The pr2_doors stack provides the building blocks and integration to allow the PR2 to autonomously detect and open doors.</description>
   <author>Maintained by Wim Meeussen</author>
-  <license>BSD</license>  
+  <license>BSD,LGPL</license>  
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/pr2_doors</url>
   <depend stack="common" /> <!-- actionlib -->
@@ -18,7 +18,6 @@
   <depend stack="pr2_mechanism" /> <!-- pr2_controller_manager, pr2_mechanism_model, realtime_tools, pr2_controller_interface -->
   <depend stack="pr2_navigation" /> <!-- pr2_navigation_teleop, pr2_navigation_perception, pr2_navigation_local -->
   <depend stack="ros" /> <!-- std_srvs, std_msgs, roscpp -->
-  <depend stack="semantic_mapping" /> <!-- point_cloud_mapping -->
   <depend stack="vision_opencv" /> <!-- opencv2, cv_bridge -->
   <depend stack="visualization_common" /> <!-- visualization_msgs -->
   <depend stack="wg_common" /> <!-- willow_maps -->

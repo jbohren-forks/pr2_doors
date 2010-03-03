@@ -49,7 +49,7 @@ This node should replace the older door_handle_detector node (which will be obso
 // ROS core
 #include <ros/ros.h>
 #include <roslib/Header.h>
-//#include <mapping_msgs/PolygonalMap.h>
+#include <mapping_msgs/PolygonalMap.h>
 
 // Most of the geometric routines that contribute to the door finding job are located here
 #include <door_handle_detector/geometric_helper.h>

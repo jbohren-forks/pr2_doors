@@ -99,7 +99,7 @@ void GraspHandleAction::execute(const door_msgs::DoorGoalConstPtr& goal)
   if (!transformTo(tf_, fixed_frame, goal->door, goal_tr, fixed_frame)){
     ROS_ERROR("GraspHandleAction: Could not tranform door message from '%s' to '%s' at time %f",
 	      goal->door.header.frame_id.c_str(), fixed_frame.c_str(), goal->door.header.stamp.toSec());
-    action_server_.setPreempted();
+    action_server_.setAborted();
     return;
   }
 
@@ -118,28 +118,19 @@ void GraspHandleAction::execute(const door_msgs::DoorGoalConstPtr& goal)
     return;
   }
   
-  // open the gripper while moving in front of the door
+  // open the gripper 
   pr2_controllers_msgs::Pr2GripperCommandGoal gripper_msg;
-  gripper_msg.command.position = 0.08; //full open
+  gripper_msg.command.position = 0.07;
   gripper_msg.command.max_effort = gripper_effort;
-  int MAX_OPEN_GRIPPER_RETRIES = 5;
-  int open_gripper_retry = 0;
-  while (gripper_action_client_.sendGoalAndWait(gripper_msg, ros::Duration(20.0), ros::Duration(5.0)) != SimpleClientGoalState::SUCCEEDED){
-
-    if (open_gripper_retry >= MAX_OPEN_GRIPPER_RETRIES) {
-      ROS_ERROR("OPEN DOOR DEMO FAILED due to GraspHandleAction failure: gripper failed to open");
-      action_server_.setPreempted();
-      return;
-    }
-
-    open_gripper_retry++;
-    ROS_INFO("Failed to open gripper to %fm, retry attempt #%d",gripper_msg.command.position,open_gripper_retry);
-
+  if (gripper_action_client_.sendGoalAndWait(gripper_msg, ros::Duration(10.0), ros::Duration(5.0)) != SimpleClientGoalState::SUCCEEDED){
+    ROS_ERROR("GraspHandleAction: gripper failed to open");
+    action_server_.setAborted();
+    return;
   }
-  
+
   // move gripper in front of door
   gripper_pose.setOrigin( Vector3(handle(0) + wrist_pos_approach(0), handle(1) + wrist_pos_approach(1),handle(2) + wrist_pos_approach(2)));
-  gripper_pose.setRotation( Quaternion(getVectorAngle(x_axis, normal), 0, M_PI/2.0) ); 
+  gripper_pose.setRotation( tf::createQuaternionFromRPY(M_PI/2.0, getVectorAngle(x_axis, normal), 0) ); 
   gripper_pose.stamp_ = Time::now();
   poseStampedTFToMsg(gripper_pose, ik_goal_.pose);
   ROS_INFO("GraspHandleAction: move in front of handle");
@@ -148,20 +139,19 @@ void GraspHandleAction::execute(const door_msgs::DoorGoalConstPtr& goal)
     ros::Duration(5.0).sleep();
     gripper_pose.stamp_ = Time::now();
     poseStampedTFToMsg(gripper_pose, ik_goal_.pose);
-    //action_server_.setPreempted();
+    //action_server_.setAborted();
     //return;
   }
 
   // move gripper over door handle
   gripper_pose.frame_id_ = fixed_frame;
   gripper_pose.setOrigin( Vector3(handle(0) + wrist_pos_grasp(0), handle(1) + wrist_pos_grasp(1),handle(2) + wrist_pos_grasp(2)));
-  gripper_pose.setRotation( Quaternion(getVectorAngle(x_axis, normal), 0, M_PI/2.0) ); 
   gripper_pose.stamp_ = Time::now();
   poseStampedTFToMsg(gripper_pose, ik_goal_.pose);
   ROS_INFO("GraspHandleAction: move over handle");
   if (ik_action_client_.sendGoalAndWait(ik_goal_, ros::Duration(20.0), ros::Duration(5.0)) != SimpleClientGoalState::SUCCEEDED) {  
     ROS_ERROR("Failure is not a problem here.");
-    // do not error because we're touchin the door
+    // do not error because we're touching the door
   }
   
   // close the gripper during 4 seconds
@@ -175,7 +165,7 @@ void GraspHandleAction::execute(const door_msgs::DoorGoalConstPtr& goal)
     else
     {
       ROS_INFO("GraspHandleAction: gripper failed to close all the way and is not stalled");
-      action_server_.setPreempted();
+      action_server_.setAborted();
       return;
     }
   }

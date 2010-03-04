@@ -44,6 +44,7 @@
 #include "pr2_doors_actions/action_release_handle.h"
 //#include "pr2_doors_actions/action_touch_door.h"
 #include "pr2_doors_actions/action_unlatch_handle.h"
+#include "pr2_doors_actions/action_move_base_door.h"
 
 
 using namespace door_handle_detector;
@@ -68,6 +69,7 @@ int main(int argc, char** argv)
   OpenDoorAction open(tf);
   ReleaseHandleAction release(tf);
   CheckPathAction check_path(tf);
+  MoveBaseDoorAction move_base_door(tf);
 
   ros::spin();
   return 0;

@@ -122,6 +122,8 @@ void MoveBaseDoorAction::execute(const door_msgs::DoorGoalConstPtr& goal)
   // get motion and search direction in fixed frame
   tf::Vector3 motion_direction = (start.inverse() * end).getOrigin().normalize()*motion_step;
   tf::Vector3 search_direction = motion_direction.cross(tf::Vector3(0,0,1)).normalize()*motion_step;
+  ROS_DEBUG("MoveBaseDoorAction: motion direction: %f %f %f", motion_direction.x(), motion_direction.y(), motion_direction.z());
+  ROS_DEBUG("MoveBaseDoorAction: search direction: %f %f %f", search_direction.x(), search_direction.y(), search_direction.z());
 
   ros::Rate rate(10.0);  
   while (ros::ok() && !action_server_.isPreemptRequested()){
@@ -145,14 +147,17 @@ void MoveBaseDoorAction::execute(const door_msgs::DoorGoalConstPtr& goal)
 				       getOrientedFootprint(next_position, current_orientation), 
 				       costmap_ros_.getInscribedRadius(), 
 				       costmap_ros_.getCircumscribedRadius()) >= 0){
+	ROS_DEBUG("MoveBaseDoorAction: Valid robot position: %f %f %f", next_position.x(), next_position.y(), next_position.z());
 	success = true;
 	break;
       }
+      ROS_DEBUG("MoveBaseDoorAction: IN-Valid robot position: %f %f %f", next_position.x(), next_position.y(), next_position.z());
     }
     geometry_msgs::Twist base_twist;
     if (success){
       base_twist.linear = toVector(next_position - current_position);
     }
+    ROS_DEBUG("MoveBaseDoorAction: Commanding base: %f %f == %f", base_twist.linear.x, base_twist.linear.y, base_twist.angular.z);
     base_pub_.publish(base_twist);
 
     rate.sleep();

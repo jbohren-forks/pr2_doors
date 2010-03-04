@@ -48,6 +48,7 @@ using namespace actionlib;
 
 static const string fixed_frame = "odom_combined";
 static const double motion_step = 0.01; // 1 cm steps
+static const double update_rate = 10.0; // 10 hz
 
 MoveBaseDoorAction::MoveBaseDoorAction(tf::TransformListener& tf) :
   tf_(tf),
@@ -57,8 +58,10 @@ MoveBaseDoorAction::MoveBaseDoorAction(tf::TransformListener& tf) :
 		 "move_base_door", 
 		 boost::bind(&MoveBaseDoorAction::execute, this, _1))
 {
+  costmap_ros_.stop();
+
   ros::NodeHandle node;
-  base_pub_ = node.advertise<geometry_msgs::Twist>("cmd_vel", 10);
+  base_pub_ = node.advertise<geometry_msgs::Twist>("base_controller/command", 10);
 
   search_pattern_.push_back(0.0);
   search_pattern_.push_back(-1.0);
@@ -114,10 +117,22 @@ void MoveBaseDoorAction::execute(const door_msgs::DoorGoalConstPtr& goal)
 { 
   ROS_INFO("MoveBaseDoorAction: execute");
 
+  costmap_ros_.start();
+  ros::Duration(3.0).sleep();
+
   // get path from current pose to goal
-  tf::Pose end = getRobotPose(goal->door, 0.5);
+  door_msgs::Door door;
+  if (!tf_.waitForTransform(fixed_frame, goal->door.header.frame_id, goal->door.header.stamp, ros::Duration(3.0)) ||
+      !transformTo(tf_, fixed_frame, goal->door, door, fixed_frame)){
+    ROS_ERROR("MoveBaseDoorAction: could not transform from %s to %s", fixed_frame.c_str(), goal->door.header.frame_id.c_str());
+    action_server_.setAborted();
+    return;
+  }
+  tf::Pose end = getRobotPose(door, 0.5);
   tf::Stamped<tf::Pose> start;
   costmap_ros_.getRobotPose(start);
+  ROS_DEBUG("MoveBaseDoorAction: current robot pose is %f %f %f", start.getOrigin().x(), start.getOrigin().y(), start.getOrigin().z());
+  ROS_DEBUG("MoveBaseDoorAction: goal robot pose is %f %f %f", end.getOrigin().x(), end.getOrigin().y(), end.getOrigin().z());
 
   // get motion and search direction in fixed frame
   tf::Vector3 motion_direction = (start.inverse() * end).getOrigin().normalize()*motion_step;
@@ -125,7 +140,7 @@ void MoveBaseDoorAction::execute(const door_msgs::DoorGoalConstPtr& goal)
   ROS_DEBUG("MoveBaseDoorAction: motion direction: %f %f %f", motion_direction.x(), motion_direction.y(), motion_direction.z());
   ROS_DEBUG("MoveBaseDoorAction: search direction: %f %f %f", search_direction.x(), search_direction.y(), search_direction.z());
 
-  ros::Rate rate(10.0);  
+  ros::Rate rate(update_rate);  
   while (ros::ok() && !action_server_.isPreemptRequested()){
     // copy most recent costmap into costmap model
     costmap_ros_.getCostmapCopy(costmap_);
@@ -155,13 +170,15 @@ void MoveBaseDoorAction::execute(const door_msgs::DoorGoalConstPtr& goal)
     }
     geometry_msgs::Twist base_twist;
     if (success){
-      base_twist.linear = toVector(next_position - current_position);
+      base_twist.linear = toVector((next_position - current_position)*update_rate/4.0);
     }
     ROS_DEBUG("MoveBaseDoorAction: Commanding base: %f %f == %f", base_twist.linear.x, base_twist.linear.y, base_twist.angular.z);
     base_pub_.publish(base_twist);
 
     rate.sleep();
   }
+
+  costmap_ros_.stop();
   action_server_.setPreempted();
 }
 

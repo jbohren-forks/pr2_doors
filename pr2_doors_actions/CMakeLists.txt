@@ -25,14 +25,7 @@ rosbuild_add_executable(action_runner
                       )
 
 # test
-rosbuild_add_executable(trigger_doors_detector 
+rosbuild_add_executable(trigger_doors_actions 
                        test/trigger_doors_detector.cpp
-		       src/action_detect_door.cpp
-		       src/action_detect_handle.cpp
-                      )
-
-rosbuild_add_executable(trigger_doors_opener
-                       test/trigger_doors_opener.cpp
-		       src/action_open_door.cpp
                       )
 

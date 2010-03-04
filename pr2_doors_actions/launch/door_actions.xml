@@ -11,82 +11,53 @@
    <param type="double" name="pose_suggestion/wrist_roll" value="-0.56" />
   </node>
 
+  <!-- params for move base door costmap -->
+  <group ns="door_actions/costmap_move_base_door" >
+    <rosparam file="$(find pr2_doors_actions)/launch/footprint.yaml" command="load" />
+    <!-- Start Costmap Parameters -->
+    <param name="global_frame" value="odom_combined" />
+    <param name="robot_base_frame" value="base_link" />
+    <param name="update_frequency" value="5.0" />
+    <param name="publish_frequency" value="1.0" />
+    <param name="obstacle_range" value="1.0" />
+    <param name="max_obstacle_height" value="2.0" />
+    <param name="raytrace_range" value="1.5" />
+    <param name="observation_sources" value="base_scan base_scan_marking" />
+
+    <param name="base_scan/observation_persistence" value="0.0" />
+    <param name="base_scan/expected_update_rate" value="0.2" />
+    <param name="base_scan/data_type" value="LaserScan" />
+    <param name="base_scan/clearing" value="true" />
+    <param name="base_scan/marking" value="false" />
+    <param name="base_scan_marking/observation_persistence" value="0.0" />
+    <param name="base_scan_marking/expected_update_rate" value="0.2" />
+    <param name="base_scan_marking/data_type" value="PointCloud" />
+    <param name="base_scan_marking/clearing" value="false" />
+    <param name="base_scan_marking/marking" value="true" />
+
+    <param name="rolling_window" value="true" />
+
+    <param name="static_map" value="false" />
+    <!-- begin only used if static map is set to false -->
+    <param name="width" value="5.0" />
+    <param name="height" value="5.0" />
+    <param name="origin_x" value="-2.5" />
+    <param name="origin_y" value="-2.5" />
+    <param name="resolution" value="0.01" />
+    <!-- end only used if static map is set to false -->
+
+    <param name="cost_scaling_factor" value="1.0" />
+    <param name="lethal_cost_threshold" value="100" />
+    <!-- End Costmap Parameters -->
+    <remap from="obstacles" to="~obstacles" />
+    <remap from="inflated_obstacles" to="~inflated_obstacles" />
+  </group>
+
 
   <!-- arm ik action server -->
   <node pkg="pr2_arm_ik_action" type="arm_ik" name="r_arm_ik" output="screen">
     <rosparam command="load" file="$(find pr2_doors_actions)/config/arm_ik_r_arm.yaml"/>
   </node>
   <!--node pkg="pr2_plugs_actions" type="tf_publish.py" args="r_arm_ik/goal PR2ArmIKActionGoal goal.pose r_arm_ik_goal" name="tf_r_arm_ik_goal" output="screen" /-->  
-
-
-  <!-- Navigation through the door -->
-  <param name="base_trajectory_controller/controller_frequency" value="20.0" type="double" />
-  <node pkg="experimental_controllers" type="base_trajectory_controller" name="base_trajectory_controller">
-    <remap from="cmd_vel" to="base_controller/command" />
-  </node>
-
-  <node pkg="pr2_doors_actions" type="move_base_door" respawn="false" name="door_reactive_planner">
-    <rosparam file="$(find pr2_doors_actions)/launch/footprint.yaml" command="load" />
-
-    <param name="action_max_allowed_time" value="10.0" />
-    <param name="controller_frequency" value="10.0" />
-    <param name="min_distance_from_obstacles" value="0.025" />
-    <param name="max_waypoint_distance" value="0.01" />
-    <param name="max_waypoint_rot_distance" value="0.2" />
-    <param name="max_explore_distance" value="2.0" />
-    <param name="horizontal_explore_distance" value="0.15" />
-    <param name="max_explore_delta_angle" value="1.0" />
-    <param name="door_goal_distance" value="0.4" />
-    <param name="num_explore_paths" value="32" />
-    <param name="choose_straight_line_trajectory" value="true" type="bool" />
-    <param name="inflation_radius" value="0.46" />
-    <param name="control_frame" value="odom_combined" />
-
-    <!-- Start Costmap Parameters -->
-    <param name="costmap/global_frame" value="odom_combined" />
-    <param name="costmap/robot_base_frame" value="base_link" />
-    <param name="costmap/update_frequency" value="5.0" />
-    <param name="costmap/publish_frequency" value="1.0" />
-    <param name="costmap/obstacle_range" value="1.0" />
-    <param name="costmap/max_obstacle_height" value="2.0" />
-    <param name="costmap/raytrace_range" value="1.5" />
-
-    <!--param name="costmap/observation_sources" value="base_scan base_scan_marking" /-->
-    <param name="costmap/observation_sources" value="base_scan base_scan_marking" />
-
-    <param name="costmap/base_scan/observation_persistence" value="0.0" />
-    <param name="costmap/base_scan/expected_update_rate" value="0.2" />
-    <param name="costmap/base_scan/data_type" value="LaserScan" />
-    <param name="costmap/base_scan/clearing" value="true" />
-    <param name="costmap/base_scan/marking" value="false" />
-    <param name="costmap/base_scan_marking/observation_persistence" value="0.0" />
-    <param name="costmap/base_scan_marking/expected_update_rate" value="0.2" />
-    <param name="costmap/base_scan_marking/data_type" value="PointCloud" />
-    <param name="costmap/base_scan_marking/clearing" value="false" />
-    <param name="costmap/base_scan_marking/marking" value="true" />
-
-    <param name="costmap/tilt_scan/observation_persistence" value="0.0" />
-    <param name="costmap/tilt_scan/expected_update_rate" value="0.2" />
-    <param name="costmap/tilt_scan/data_type" value="LaserScan" />
-    <param name="costmap/tilt_scan/clearing" value="true" />
-    <param name="costmap/tilt_scan/marking" value="false" />
-
-    <param name="costmap/rolling_window" value="true" />
-    <param name="costmap/static_map" value="false" />
-
-    <!-- begin only used if static map is set to false -->
-    <param name="costmap/width" value="5.0" />
-    <param name="costmap/height" value="5.0" />
-    <param name="costmap/origin_x" value="-2.5" />
-    <param name="costmap/origin_y" value="-2.5" />
-    <param name="costmap/resolution" value="0.01" />
-    <!-- end only used if static map is set to false -->
-
-    <param name="costmap/cost_scaling_factor" value="1.0" />
-    <param name="costmap/lethal_cost_threshold" value="100" />
-    <!-- End Costmap Parameters -->
-   <remap from="obstacles" to="~obstacles" />
-   <remap from="inflated_obstacles" to="~inflated_obstacles" />
-  </node>
 
 </launch>

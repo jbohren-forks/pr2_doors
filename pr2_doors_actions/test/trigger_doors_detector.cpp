@@ -55,7 +55,12 @@ using namespace pr2_doors_common;
 int
   main (int argc, char **argv)
 {
-  ros::init(argc, argv, "trigger_detect_door");
+  ros::init(argc, argv, "trigger_door_action");
+
+  if (argc < 2){
+    ROS_ERROR("Name of action to trigger required");
+    return 0;
+  }
 
   // goal
   door_msgs::DoorGoal door_goal;
@@ -67,12 +72,8 @@ int
   door_goal.door.hinge = door_msgs::Door::HINGE_P2;
   door_goal.door.header.frame_id = "base_footprint";
 
-  // create action server
-  tf::TransformListener tf;
-  door_handle_detector::DetectDoorAction door_detector(tf);
-
   // create action client
-  actionlib::SimpleActionClient<door_msgs::DoorAction> action_client("detect_door", true);
+  actionlib::SimpleActionClient<door_msgs::DoorAction> action_client(argv[1], true);
   cout << "waiting for action server to start..." << endl;
   boost::thread(boost::bind(&ros::spin));
   action_client.waitForServer();

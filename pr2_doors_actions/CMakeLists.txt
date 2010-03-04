@@ -20,13 +20,9 @@ rosbuild_add_executable(action_runner
                        src/action_open_door.cpp
                        src/action_unlatch_handle.cpp
                        src/action_release_handle.cpp
+                       src/action_move_base_door.cpp
 		       src/action_runner.cpp
                       )
-
-#rosbuild_add_executable(move_base_door
-#                       src/move_base_door_action.cpp
-#		       src/door_reactive_planner.cpp
-#                      )
 
 # test
 rosbuild_add_executable(trigger_doors_detector 

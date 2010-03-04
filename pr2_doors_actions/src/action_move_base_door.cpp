@@ -128,15 +128,15 @@ void MoveBaseDoorAction::execute(const door_msgs::DoorGoalConstPtr& goal)
     action_server_.setAborted();
     return;
   }
-  tf::Pose end = getRobotPose(door, 0.5);
-  tf::Stamped<tf::Pose> start;
-  costmap_ros_.getRobotPose(start);
-  ROS_DEBUG("MoveBaseDoorAction: current robot pose is %f %f %f", start.getOrigin().x(), start.getOrigin().y(), start.getOrigin().z());
-  ROS_DEBUG("MoveBaseDoorAction: goal robot pose is %f %f %f", end.getOrigin().x(), end.getOrigin().y(), end.getOrigin().z());
+  tf::Pose end_position = getRobotPose(door, 0.5);
+  tf::Stamped<tf::Pose> start_position;
+  costmap_ros_.getRobotPose(start_position);
+  ROS_DEBUG("MoveBaseDoorAction: current robot pose is %f %f %f", start_position.getOrigin().x(), start_position.getOrigin().y(), start_position.getOrigin().z());
+  ROS_DEBUG("MoveBaseDoorAction: goal robot pose is %f %f %f", end_position.getOrigin().x(), end_position.getOrigin().y(), end_position.getOrigin().z());
 
   // get motion and search direction in fixed frame
-  tf::Vector3 motion_direction = (start.inverse() * end).getOrigin().normalize()*motion_step;
-  tf::Vector3 search_direction = motion_direction.cross(tf::Vector3(0,0,1)).normalize()*motion_step;
+  tf::Vector3 motion_direction = (start_position.inverse() * end_position).getOrigin().normalize();
+  tf::Vector3 search_direction = motion_direction.cross(tf::Vector3(0,0,1)).normalize();
   ROS_DEBUG("MoveBaseDoorAction: motion direction: %f %f %f", motion_direction.x(), motion_direction.y(), motion_direction.z());
   ROS_DEBUG("MoveBaseDoorAction: search direction: %f %f %f", search_direction.x(), search_direction.y(), search_direction.z());
 
@@ -151,11 +151,23 @@ void MoveBaseDoorAction::execute(const door_msgs::DoorGoalConstPtr& goal)
     tf::Vector3 current_position = tmp_pose.getOrigin();
     double current_orientation = tf::getYaw(tmp_pose.getRotation());
 
+    // check if we reached our goal
+    ROS_DEBUG("MoveBaseDoorAction: distance to goal: %f", motion_direction.dot(end_position.getOrigin() - current_position));
+    if (motion_direction.dot(end_position.getOrigin() - current_position) < 0){
+      geometry_msgs::Twist base_twist;
+      base_pub_.publish(base_twist);  // stop moving
+      door_msgs::DoorResult result;  result.door = door;
+      action_server_.setSucceeded(result);
+      costmap_ros_.stop();
+      ROS_INFO("MoveBaseDoorAction: reached goal");
+      return;
+    }
+
     // find next valid robot pose
     tf::Vector3 next_position;
     bool success = false;
     for (int i=0; i<(int)search_pattern_.size(); i++){
-      next_position = current_position +  motion_direction  + (search_direction * search_pattern_[i]);
+      next_position = current_position +  (motion_direction*motion_step)  + (search_direction * motion_step * search_pattern_[i]);
 
       // check in costmap if this is valid robot pose
       if (costmap_model_.footprintCost(toPoint(next_position), 
@@ -172,7 +184,7 @@ void MoveBaseDoorAction::execute(const door_msgs::DoorGoalConstPtr& goal)
     if (success){
       base_twist.linear = toVector((next_position - current_position)*update_rate/4.0);
     }
-    ROS_DEBUG("MoveBaseDoorAction: Commanding base: %f %f == %f", base_twist.linear.x, base_twist.linear.y, base_twist.angular.z);
+    //ROS_DEBUG("MoveBaseDoorAction: Commanding base: %f %f == %f", base_twist.linear.x, base_twist.linear.y, base_twist.angular.z);
     base_pub_.publish(base_twist);
 
     rate.sleep();

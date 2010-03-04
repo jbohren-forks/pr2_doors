@@ -26,6 +26,6 @@ rosbuild_add_executable(action_runner
 
 # test
 rosbuild_add_executable(trigger_doors_actions 
-                       test/trigger_doors_detector.cpp
+                       test/trigger_doors_actions.cpp
                       )
 

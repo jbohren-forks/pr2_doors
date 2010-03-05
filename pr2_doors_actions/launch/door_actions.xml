@@ -4,7 +4,7 @@
    <!-- params for cartesian motion using ik -->
    <param type="double" name="pose_suggestion/shoulder_pan" value="1.05" />
    <param type="double" name="pose_suggestion/shoulder_lift" value="0.72" />
-   <param type="double" name="pose_suggestion/upper_arm_roll" value="-2.59" />
+   <param type="double" name="pose_suggestion/upper_arm_roll" value="0.0" />
    <param type="double" name="pose_suggestion/elbow_flex" value="-1.78" />
    <param type="double" name="pose_suggestion/forearm_roll" value="-2.07" />
    <param type="double" name="pose_suggestion/wrist_flex" value="-1.57" />

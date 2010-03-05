@@ -235,9 +235,7 @@ int
     switch_goal.stop_controllers.push_back("r_arm_controller");
     switch_goal.start_controllers.push_back("r_gripper_effort_controller");
     switch_goal.start_controllers.push_back("r_arm_cartesian_tff_controller");
-    switch_goal.start_controllers.push_back("r_arm_constraint_cartesian_wrench_controller");
     if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
-    ros::Duration(15.0).sleep();// hack to give elbow time to move out of the way
     if (!ros::ok() || unlatch_handle.sendGoalAndWait(door_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
     writeString("...Unlatch handle finished");
 
@@ -280,11 +278,9 @@ int
     writeString("Releasing handle...");
     switch_goal.start_controllers.clear();  switch_goal.stop_controllers.clear();
     switch_goal.stop_controllers.push_back("r_arm_cartesian_tff_controller");
-    switch_goal.stop_controllers.push_back("r_arm_constraint_cartesian_wrench_controller");
-    switch_goal.start_controllers.push_back("r_arm_constraint_cartesian_trajectory_controller");
-    switch_goal.start_controllers.push_back("r_arm_constraint_cartesian_pose_controller");
+    switch_goal.start_controllers.push_back("r_arm_controller");
     if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
-    writeString("switching to r_arm controller finished, waiting for release handle action");
+    ros::Duration(2.0).sleep(); // workaround for ticket # 3954
     if (!ros::ok() || release_handle.sendGoalAndWait(door_goal, ros::Duration(10.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
     writeString("...Releasing handle finished");
   }
@@ -292,9 +288,6 @@ int
   // tuck arm
   writeString("Tuck arm...");
   switch_goal.start_controllers.clear();  switch_goal.stop_controllers.clear();
-  switch_goal.stop_controllers.push_back("r_arm_constraint_cartesian_trajectory_controller");
-  switch_goal.stop_controllers.push_back("r_arm_constraint_cartesian_pose_controller");
-  switch_goal.start_controllers.push_back("r_arm_controller");
   if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
   if (!ros::ok() || tuck_arms.sendGoalAndWait(tuck_arms_goal, ros::Duration(10.0), ros::Duration(5.0)) != SimpleClientGoalState::SUCCEEDED) return -1;
   writeString("...Tuck arm finished");

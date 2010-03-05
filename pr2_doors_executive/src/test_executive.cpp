@@ -245,9 +245,6 @@ int
     if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
     thread = new boost::thread(boost::bind(&SimpleActionClient<door_msgs::DoorAction>::sendGoalAndWait, 
 					   &open_door, door_goal, ros::Duration(120.0), ros::Duration(40.0)));
-    writeString("Waiting for Wim bug...");
-    ros::Duration().fromSec(10.0).sleep(); //Wait for bug to clear.
-    writeString("...Done waiting");
   }    
 
   // move throught door

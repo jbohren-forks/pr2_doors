@@ -182,7 +182,7 @@ void MoveBaseDoorAction::execute(const door_msgs::DoorGoalConstPtr& goal)
     }
     geometry_msgs::Twist base_twist;
     if (success){
-      base_twist.linear = toVector((next_position - current_position)*update_rate/4.0);
+      base_twist.linear = toVector((next_position - current_position)*update_rate/2.0);
     }
     //ROS_DEBUG("MoveBaseDoorAction: Commanding base: %f %f == %f", base_twist.linear.x, base_twist.linear.y, base_twist.angular.z);
     base_pub_.publish(base_twist);

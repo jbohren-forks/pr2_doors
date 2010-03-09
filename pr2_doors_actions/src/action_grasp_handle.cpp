@@ -122,11 +122,22 @@ void GraspHandleAction::execute(const door_msgs::DoorGoalConstPtr& goal)
   pr2_controllers_msgs::Pr2GripperCommandGoal gripper_msg;
   gripper_msg.command.position = 0.07;
   gripper_msg.command.max_effort = gripper_effort;
-  if (gripper_action_client_.sendGoalAndWait(gripper_msg, ros::Duration(10.0), ros::Duration(5.0)) != SimpleClientGoalState::SUCCEEDED){
-    ROS_ERROR("GraspHandleAction: gripper failed to open");
-    action_server_.setAborted();
-    return;
+
+  int MAX_OPEN_GRIPPER_RETRIES = 5;
+  int open_gripper_retry = 0;
+  while (gripper_action_client_.sendGoalAndWait(gripper_msg, ros::Duration(20.0), ros::Duration(5.0)) != SimpleClientGoalState::SUCCEEDED){
+
+    if (open_gripper_retry >= MAX_OPEN_GRIPPER_RETRIES) {
+      ROS_ERROR("GraspHandleAction: OPEN DOOR DEMO FAILED due to GraspHandleAction failure: gripper failed to open");
+      action_server_.setAborted();
+      return;
+    }
+
+    open_gripper_retry++;
+    ROS_INFO("Failed to open gripper to %fm, retry attempt #%d",gripper_msg.command.position,open_gripper_retry);
+
   }
+
 
   // move gripper in front of door
   gripper_pose.setOrigin( Vector3(handle(0) + wrist_pos_approach(0), handle(1) + wrist_pos_approach(1),handle(2) + wrist_pos_approach(2)));

@@ -46,7 +46,6 @@
 
 #include <actionlib/client/simple_action_client.h>
 #include <door_msgs/DoorAction.h>
-#include <pr2_common_action_msgs/LaserTiltProfileAction.h>
 #include <pr2_common_action_msgs/TuckArmsAction.h>
 #include <pr2_common_action_msgs/SwitchControllersAction.h>
 
@@ -105,10 +104,9 @@ int
   Duration timeout = Duration().fromSec(5.0);
 
   writeString("Creating new action clients...");
-  actionlib::SimpleActionClient<pr2_common_action_msgs::LaserTiltProfileAction> tilt_laser_profile("tilt_laser_profile", true);
   actionlib::SimpleActionClient<pr2_common_action_msgs::TuckArmsAction> tuck_arms("tuck_arms", true);
   actionlib::SimpleActionClient<pr2_common_action_msgs::SwitchControllersAction> switch_controller("switch_controllers", true);
-  actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> move_base_local("move_base_local", true);
+  actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> move_base_local("pr2_move_base_local", true);
   actionlib::SimpleActionClient<door_msgs::DoorAction> detect_door("detect_door", true);
   actionlib::SimpleActionClient<door_msgs::DoorAction> detect_handle("detect_handle", true);
   actionlib::SimpleActionClient<door_msgs::DoorAction> touch_door("touch_door", true);
@@ -119,8 +117,6 @@ int
   actionlib::SimpleActionClient<door_msgs::DoorAction> release_handle("release_handle", true);
   actionlib::SimpleActionClient<door_msgs::DoorAction> move_base_door("move_base_door", true);
 
-  writeString("waiting for tilt laser action server...");
-  tilt_laser_profile.waitForServer();
   writeString("waiting for switch controller action server...");
   switch_controller.waitForServer();
   writeString("waiting for move base local action server...");
@@ -193,9 +189,7 @@ int
   target << base_goal.target_pose.pose.position.x << ", " << base_goal.target_pose.pose.position.y << ", " << base_goal.target_pose.pose.position.z;
   writeString("Move to pose " + target.str() + "...");
   switch_goal.start_controllers.clear();  switch_goal.stop_controllers.clear();
-  pr2_common_action_msgs::LaserTiltProfileGoal tilt_laser_goal;
   if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
-  if (!ros::ok() || tilt_laser_profile.sendGoalAndWait(tilt_laser_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
   while (ros::ok() && move_base_local.sendGoalAndWait(base_goal, ros::Duration(50.0), timeout) != SimpleClientGoalState::SUCCEEDED) {writeString("re-trying move base local");};
   writeString("...Move to pose finished");
 
@@ -236,7 +230,7 @@ int
     switch_goal.start_controllers.push_back("r_gripper_effort_controller");
     switch_goal.start_controllers.push_back("r_arm_cartesian_tff_controller");
     if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
-    if (!ros::ok() || unlatch_handle.sendGoalAndWait(door_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
+    if (!ros::ok() || unlatch_handle.sendGoalAndWait(door_goal, ros::Duration(15.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
     writeString("...Unlatch handle finished");
 
     // open door in separate thread
@@ -252,7 +246,6 @@ int
   writeString("Moving through door with door message " + os4.str());
   switch_goal.start_controllers.clear();  switch_goal.stop_controllers.clear();
   if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
-  if (!ros::ok() || tilt_laser_profile.sendGoalAndWait(tilt_laser_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
   if (!ros::ok() || move_base_door.sendGoalAndWait(door_goal, ros::Duration(120.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
   writeString("...Moving through door finished");
 

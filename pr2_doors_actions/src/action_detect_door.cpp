@@ -126,9 +126,8 @@ bool DetectDoorAction::laserDetection(const door_msgs::Door& door_in, door_msgs:
   double door_top    =  2.5;
   ROS_INFO("DetectDoorAction: tilt laser is at height %f, and door at distance %f", laser_height, dist);
 
-  // set the laser scanner to intensity mode
-  //pr2_robot_actions::setHokuyoMode("tilt_hokuyo_node", "intensity");
-  // @TODO fix this by calling dynamic reconfigure
+  // set the laser scanner to NON-intensity mode
+  system("rosrun dynamic_reconfigure dynparam set /tilt_hokuyo_node '{ intensity: false }'");
 
   // gets a point cloud from the point_cloud_srv
   if (action_server_.isPreemptRequested()) return false;

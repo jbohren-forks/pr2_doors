@@ -130,7 +130,7 @@ void GraspHandleAction::execute(const door_msgs::DoorGoalConstPtr& goal)
 
   // move gripper in front of door
   gripper_pose.setOrigin( Vector3(handle(0) + wrist_pos_approach(0), handle(1) + wrist_pos_approach(1),handle(2) + wrist_pos_approach(2)));
-  gripper_pose.setRotation( tf::createQuaternionFromRPY(M_PI/2.0, getVectorAngle(x_axis, normal), 0) ); 
+  gripper_pose.setRotation( tf::createQuaternionFromRPY(M_PI/2.0, 0, getVectorAngle(x_axis, normal)) ); 
   gripper_pose.stamp_ = Time::now();
   poseStampedTFToMsg(gripper_pose, ik_goal_.pose);
   ROS_INFO("GraspHandleAction: move in front of handle");

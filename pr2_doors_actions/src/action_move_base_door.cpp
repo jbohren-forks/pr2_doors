@@ -135,7 +135,7 @@ void MoveBaseDoorAction::execute(const door_msgs::DoorGoalConstPtr& goal)
   ROS_DEBUG("MoveBaseDoorAction: goal robot pose is %f %f %f", end_position.getOrigin().x(), end_position.getOrigin().y(), end_position.getOrigin().z());
 
   // get motion and search direction in fixed frame
-  tf::Vector3 motion_direction = (start_position.inverse() * end_position).getOrigin().normalize();
+  tf::Vector3 motion_direction = (end_position.getOrigin() - start_position.getOrigin()).normalize();
   tf::Vector3 search_direction = motion_direction.cross(tf::Vector3(0,0,1)).normalize();
   ROS_DEBUG("MoveBaseDoorAction: motion direction: %f %f %f", motion_direction.x(), motion_direction.y(), motion_direction.z());
   ROS_DEBUG("MoveBaseDoorAction: search direction: %f %f %f", search_direction.x(), search_direction.y(), search_direction.z());
@@ -146,10 +146,10 @@ void MoveBaseDoorAction::execute(const door_msgs::DoorGoalConstPtr& goal)
     costmap_ros_.getCostmapCopy(costmap_);
 
     // get current robot pose
-    tf::Stamped<tf::Pose> tmp_pose;
-    costmap_ros_.getRobotPose(tmp_pose);
-    tf::Vector3 current_position = tmp_pose.getOrigin();
-    double current_orientation = tf::getYaw(tmp_pose.getRotation());
+    tf::Stamped<tf::Pose> current_pose;
+    costmap_ros_.getRobotPose(current_pose);
+    tf::Vector3 current_position = current_pose.getOrigin();
+    double current_orientation = tf::getYaw(current_pose.getRotation());
 
     // check if we reached our goal
     ROS_DEBUG("MoveBaseDoorAction: distance to goal: %f", motion_direction.dot(end_position.getOrigin() - current_position));
@@ -182,7 +182,8 @@ void MoveBaseDoorAction::execute(const door_msgs::DoorGoalConstPtr& goal)
     }
     geometry_msgs::Twist base_twist;
     if (success){
-      base_twist.linear = toVector((next_position - current_position)*update_rate/2.0);
+      base_twist.linear = toVector( (current_pose.inverse() * tf::Pose(tf::Quaternion::getIdentity(), next_position)).getOrigin() );
+      // base_twist.linear = toVector((next_position - current_position)*update_rate);
     }
     //ROS_DEBUG("MoveBaseDoorAction: Commanding base: %f %f == %f", base_twist.linear.x, base_twist.linear.y, base_twist.angular.z);
     base_pub_.publish(base_twist);

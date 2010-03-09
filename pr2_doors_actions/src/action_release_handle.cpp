@@ -103,20 +103,20 @@ void ReleaseHandleAction::execute(const door_msgs::DoorGoalConstPtr& goal)
   while (gripper_action_client_.sendGoalAndWait(gripper_msg, ros::Duration(20.0), ros::Duration(5.0)) != SimpleClientGoalState::SUCCEEDED){
 
     if (open_gripper_retry >= MAX_OPEN_GRIPPER_RETRIES) {
-      ROS_ERROR("Release handle: gripper failed to open");
+      ROS_ERROR("OPEN DOOR DEMO FAILED due to GraspHandleAction failure: gripper failed to open");
       action_server_.setAborted();
       return;
     }
 
     open_gripper_retry++;
-    ROS_INFO("Release handle: Failed to open gripper to %fm, retry attempt #%d",gripper_msg.command.position,open_gripper_retry);
+    ROS_INFO("Failed to open gripper to %fm, retry attempt #%d",gripper_msg.command.position,open_gripper_retry);
 
   }
 
   // get current gripper pose
   ros::Time time = ros::Time::now();
   if (!tf_.waitForTransform("base_link", "r_wrist_roll_link", time, ros::Duration(3.0))){
-    ROS_ERROR("Release handle: Failed to get transform between base_link and r_wrist_roll_link");
+    ROS_ERROR("GraspHandleAction: Failed to get transform between base_link and r_wrist_roll_link");
     action_server_.setAborted();
     return;
   }
@@ -126,11 +126,11 @@ void ReleaseHandleAction::execute(const door_msgs::DoorGoalConstPtr& goal)
 
 
   // move gripper away from the door
-  ROS_INFO("Release handle: move away from door handle");
+  ROS_INFO("GraspHandleAction: move away from door handle");
   tf::poseStampedTFToMsg(tf::Stamped<tf::Transform>(gripper_pose * gripper_offset, time, "base_link"),
                          ik_goal_.pose);
   if (ik_action_client_.sendGoalAndWait(ik_goal_, ros::Duration(20.0), ros::Duration(5.0)) != SimpleClientGoalState::SUCCEEDED) {
-    ROS_ERROR("Release handle: failed to move away from door handle");
+    ROS_ERROR("GraspHandleAction: failed to move away from door handle");
     action_server_.setAborted();
     return;
   }

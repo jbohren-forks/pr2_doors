@@ -122,7 +122,7 @@ void ReleaseHandleAction::execute(const door_msgs::DoorGoalConstPtr& goal)
   }
   tf::StampedTransform gripper_pose;
   tf_.lookupTransform("base_link", "r_wrist_roll_link", time, gripper_pose);
-  tf::Transform gripper_offset(tf::Quaternion::getIdentity() ,tf::Vector3(-0.1,0,0));
+  tf::Transform gripper_offset(tf::Quaternion::getIdentity() ,tf::Vector3(-0.06,0,0));
 
 
   // move gripper away from the door

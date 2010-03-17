@@ -287,7 +287,7 @@ int
   writeString("Tuck arm...");
   switch_goal.start_controllers.clear();  switch_goal.stop_controllers.clear();
   if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
-  if (!ros::ok() || tuck_arms.sendGoalAndWait(tuck_arms_goal, ros::Duration(30.0), ros::Duration(5.0)) != SimpleClientGoalState::SUCCEEDED) return -1;
+  if (!ros::ok() || tuck_arms.sendGoalAndWait(tuck_arms_goal, ros::Duration(65.0), ros::Duration(5.0)) != SimpleClientGoalState::SUCCEEDED) return -1;
   writeString("...Tuck arm finished");
 
 

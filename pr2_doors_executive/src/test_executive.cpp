@@ -254,7 +254,7 @@ int
   switch_goal.start_controllers.clear();  switch_goal.stop_controllers.clear();
   if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
   if (!ros::ok() || tilt_laser_profile.sendGoalAndWait(tilt_laser_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
-  if (!ros::ok() || move_base_door.sendGoalAndWait(door_goal, ros::Duration(120.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
+  if (!ros::ok() || move_base_door.sendGoalAndWait(door_goal, ros::Duration(180.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
   writeString("...Moving through door finished");
 
   // preempt open/push door

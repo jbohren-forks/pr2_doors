@@ -147,10 +147,11 @@ int
   // tuck arm
   writeString("Tuck arms...");
   switch_goal.start_controllers.clear();  switch_goal.stop_controllers.clear();
+  switch_goal.start_controllers.push_back("l_arm_controller");
   switch_goal.start_controllers.push_back("r_arm_controller");
   if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
   pr2_common_action_msgs::TuckArmsGoal  tuck_arms_goal;
-  tuck_arms_goal.untuck = false;    tuck_arms_goal.left = false; tuck_arms_goal.right = true;
+  tuck_arms_goal.untuck = false;    tuck_arms_goal.left = true; tuck_arms_goal.right = true;
   if (!ros::ok() || tuck_arms.sendGoalAndWait(tuck_arms_goal, ros::Duration(10.0), ros::Duration(5.0)) != SimpleClientGoalState::SUCCEEDED) return -1;
   writeString("...Tuck arms finished");
 

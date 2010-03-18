@@ -153,6 +153,16 @@ int
   switch_goal.start_controllers.clear();  switch_goal.stop_controllers.clear();
   switch_goal.start_controllers.push_back("l_arm_controller");
   switch_goal.start_controllers.push_back("r_arm_controller");
+  /************************************************************************/
+  /*                                                                      */
+  /*  based on all the repeated patterns in this executive                */
+  /*  one should consider packaging the sendGoalAndWait into some macro   */
+  /*  that does:                                                          */
+  /*    1. verbose output of upcoming action                              */
+  /*    2. sendGoalAndWait                                                */
+  /*    3. verbose output of failure / retries / completion               */
+  /*                                                                      */
+  /************************************************************************/
   if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED)
   {
     writeString("Tuck arms: failed to start l_arm_controller and r_arm_controller using switch_controller action.");

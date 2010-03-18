@@ -64,9 +64,12 @@ Publisher test_output;
 
 void writeString(std::string txt) {
   if (output)
-    fprintf(output, "%s at time %f sec.\n", txt.c_str(),ros::Time::now().toSec());
+    fprintf(output, "[Test Executive] %s at time %f sec.\n", txt.c_str(),ros::Time::now().toSec());
+  // FIXME: @todo: dangerous, this does not check for bound...
+  char tmp[2048];
+  sprintf(tmp,"[Test Executive] %256s at time %30f sec.\n", txt.c_str(),ros::Time::now().toSec());
   std_msgs::String str;
-  str.data = txt;
+  str.data = std::string(tmp);
   test_output.publish(str);
   ROS_INFO("[Test Executive] %s at time %f sec.", txt.c_str(),ros::Time::now().toSec());
 }

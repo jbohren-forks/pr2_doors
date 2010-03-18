@@ -153,18 +153,33 @@ int
   switch_goal.start_controllers.clear();  switch_goal.stop_controllers.clear();
   switch_goal.start_controllers.push_back("l_arm_controller");
   switch_goal.start_controllers.push_back("r_arm_controller");
-  if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
+  if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED)
+  {
+    writeString("Tuck arms: failed to start l_arm_controller and r_arm_controller using switch_controller action.");
+    return -1;
+  }
   pr2_common_action_msgs::TuckArmsGoal  tuck_arms_goal;
   tuck_arms_goal.untuck = false;    tuck_arms_goal.left = true; tuck_arms_goal.right = true;
-  if (!ros::ok() || tuck_arms.sendGoalAndWait(tuck_arms_goal, ros::Duration(30.0), ros::Duration(5.0)) != SimpleClientGoalState::SUCCEEDED) return -1;
+  if (!ros::ok() || tuck_arms.sendGoalAndWait(tuck_arms_goal, ros::Duration(30.0), ros::Duration(5.0)) != SimpleClientGoalState::SUCCEEDED)
+  {
+    writeString("Tuck arms: tuck_arms action failed to reach goal");
+    return -1;
+  }
   writeString("...Tuck arms finished");
 
   // detect door
   writeString("Detect door...");
   door_goal.door = prior_door;
   switch_goal.start_controllers.clear();  switch_goal.stop_controllers.clear();
-  if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
-  while (ros::ok() && detect_door.sendGoalAndWait(door_goal, ros::Duration(30.0), timeout) != SimpleClientGoalState::SUCCEEDED);
+  if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED)
+  {
+    writeString("Detect door: failed to stop controllers using switch_controller action.");
+    return -1;
+  }
+  while (ros::ok() && detect_door.sendGoalAndWait(door_goal, ros::Duration(30.0), timeout) != SimpleClientGoalState::SUCCEEDED)
+  {
+    writeString("Detect door: detecting door in an potentially infinite loop.");
+  }
   door_goal.door = detect_door.getResult()->door;
   writeString("...Detect door finished");
   std::ostringstream os2; os2 << door_goal.door;
@@ -178,9 +193,16 @@ int
   if (!open_by_pushing){
     writeString("Detect handle...");
     switch_goal.start_controllers.clear();  switch_goal.stop_controllers.clear();
-    if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
+    if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED)
+    {
+      writeString("Detect handle: failed to stop controllers using switch_controller action.");
+      return -1;
+    }
     writeString("Detect handle...");
-    while (ros::ok() && detect_handle.sendGoalAndWait(door_goal, ros::Duration(60.0), timeout) != SimpleClientGoalState::SUCCEEDED);
+    while (ros::ok() && detect_handle.sendGoalAndWait(door_goal, ros::Duration(60.0), timeout) != SimpleClientGoalState::SUCCEEDED)
+    {
+      writeString("Detect handle: detecting handle in an potentially infinite loop.");
+    }
     door_goal.door = detect_handle.getResult()->door;
     std::ostringstream os3; os3 << door_goal.door;
     writeString("detect handle " + os3.str());
@@ -195,9 +217,20 @@ int
   writeString("Move to pose " + target.str() + "...");
   switch_goal.start_controllers.clear();  switch_goal.stop_controllers.clear();
   pr2_common_action_msgs::LaserTiltProfileGoal tilt_laser_goal;
-  if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
-  if (!ros::ok() || tilt_laser_profile.sendGoalAndWait(tilt_laser_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
-  while (ros::ok() && move_base_local.sendGoalAndWait(base_goal, ros::Duration(50.0), timeout) != SimpleClientGoalState::SUCCEEDED) {writeString("re-trying move base local");};
+  if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED)
+  {
+    writeString("Move to pose: failed to stop controllers using switch_controller action.");
+    return -1;
+  }
+  if (!ros::ok() || tilt_laser_profile.sendGoalAndWait(tilt_laser_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED)
+  {
+    writeString("Move to pose: failed to start tilt_laser_goal controllers using tilt_laser_profile action.");
+    return -1;
+  }
+  while (ros::ok() && move_base_local.sendGoalAndWait(base_goal, ros::Duration(50.0), timeout) != SimpleClientGoalState::SUCCEEDED)
+  {
+    writeString("Move to pose: trying move_base_local in an potentially infinite loop.");
+  }
   writeString("...Move to pose finished");
 
   // touch door
@@ -208,15 +241,27 @@ int
     switch_goal.start_controllers.push_back("r_gripper_effort_controller");
     switch_goal.start_controllers.push_back("r_arm_constraint_cartesian_trajectory_controller");
     switch_goal.start_controllers.push_back("r_arm_constraint_cartesian_pose_controller");
-    if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
-    if (!ros::ok() || touch_door.sendGoalAndWait(door_goal, ros::Duration(10.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
+    if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED)
+    {
+      writeString("Touch door: failed to start r_arm_controller r_gripper_effort_controller r_arm_constraint_cartesian_trajectory_controller r_arm_constraint_cartesian_pose_controller using switch_controller action.");
+      return -1;
+    }
+    if (!ros::ok() || touch_door.sendGoalAndWait(door_goal, ros::Duration(10.0), timeout) != SimpleClientGoalState::SUCCEEDED)
+    {
+      writeString("Touch door: failed to complete tuch_door action.");
+      return -1;
+    }
     writeString("...Touch door finished");
 
     // push door in separate thread
     writeString("Push door (separate thread)...");
     switch_goal.start_controllers.clear();  switch_goal.stop_controllers.clear();
     switch_goal.stop_controllers.push_back("r_arm_constraint_cartesian_trajectory_controller");
-    if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
+    if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED)
+    {
+      writeString("Push door: failed to start r_arm_constraint_cartesian_trajectory_controller with switch_controller action.");
+      return -1;
+    }
     thread = new boost::thread(boost::bind(&SimpleActionClient<door_msgs::DoorAction>::sendGoalAndWait, 
 					   &push_door, door_goal, ros::Duration(120.0), ros::Duration(40.0)));
   }
@@ -225,9 +270,17 @@ int
     // grasp handle
     switch_goal.start_controllers.clear();  switch_goal.stop_controllers.clear();
     switch_goal.start_controllers.push_back("r_gripper_effort_controller");
-    if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
+    if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED)
+    {
+      writeString("Grasp handle: failed to start r_gripper_effort_controller with switch_controller action.");
+      return -1;
+    }
     writeString("switching to r gripper effort action controller finished, waiting for grasp handle action.");
-    if (!ros::ok() || grasp_handle.sendGoalAndWait(door_goal, ros::Duration(150.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
+    if (!ros::ok() || grasp_handle.sendGoalAndWait(door_goal, ros::Duration(150.0), timeout) != SimpleClientGoalState::SUCCEEDED)
+    {
+      writeString("Grasp handle: failed to complete grasp_handle action.");
+      return -1;
+    }
     writeString("...Grasp handle finished");
 
     // unlatch handle
@@ -236,14 +289,26 @@ int
     switch_goal.stop_controllers.push_back("r_arm_controller");
     switch_goal.start_controllers.push_back("r_gripper_effort_controller");
     switch_goal.start_controllers.push_back("r_arm_cartesian_tff_controller");
-    if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
-    if (!ros::ok() || unlatch_handle.sendGoalAndWait(door_goal, ros::Duration(15.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
+    if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED)
+    {
+      writeString("Unlatch handle: failed to start r_arm_controller r_gripper_effort_controller r_arm_cartesian_tff_controller with switch_controller action.");
+      return -1;
+    }
+    if (!ros::ok() || unlatch_handle.sendGoalAndWait(door_goal, ros::Duration(15.0), timeout) != SimpleClientGoalState::SUCCEEDED)
+    {
+      writeString("Unlatch handle: failed to complete unlatch_handle action.");
+      return -1;
+    }
     writeString("...Unlatch handle finished");
 
     // open door in separate thread
     writeString("Open door (separate thread)...");
     switch_goal.start_controllers.clear();  switch_goal.stop_controllers.clear();
-    if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
+    if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED)
+    {
+      writeString("Open door: failed to stop controllers with switch_controller action.");
+      return -1;
+    }
     thread = new boost::thread(boost::bind(&SimpleActionClient<door_msgs::DoorAction>::sendGoalAndWait, 
 					   &open_door, door_goal, ros::Duration(120.0), ros::Duration(40.0)));
   }    
@@ -252,9 +317,21 @@ int
   std::ostringstream os4; os4 << door_goal.door;
   writeString("Moving through door with door message " + os4.str());
   switch_goal.start_controllers.clear();  switch_goal.stop_controllers.clear();
-  if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
-  if (!ros::ok() || tilt_laser_profile.sendGoalAndWait(tilt_laser_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
-  if (!ros::ok() || move_base_door.sendGoalAndWait(door_goal, ros::Duration(180.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
+  if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED)
+  {
+    writeString("Moving through door: failed to stop controllers with switch_controller action.");
+    return -1;
+  }
+  if (!ros::ok() || tilt_laser_profile.sendGoalAndWait(tilt_laser_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED)
+  {
+    writeString("Moving through door: failed to start tilt_laser_goal controllers using tilt_laser_profile action.");
+    return -1;
+  }
+  if (!ros::ok() || move_base_door.sendGoalAndWait(door_goal, ros::Duration(180.0), timeout) != SimpleClientGoalState::SUCCEEDED)
+  {
+    writeString("Moving through door: failed to complete move_base_door action.");
+    return -1;
+  }
   writeString("...Moving through door finished");
 
   // preempt open/push door
@@ -277,17 +354,33 @@ int
     switch_goal.start_controllers.clear();  switch_goal.stop_controllers.clear();
     switch_goal.stop_controllers.push_back("r_arm_cartesian_tff_controller");
     switch_goal.start_controllers.push_back("r_arm_controller");
-    if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
+    if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED)
+    {
+      writeString("Release handle: failed to start r_arm_cartesian_tff_controller r_arm_controller with switch_controller action.");
+      return -1;
+    }
     ros::Duration(2.0).sleep(); // workaround for ticket # 3954
-    if (!ros::ok() || release_handle.sendGoalAndWait(door_goal, ros::Duration(10.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
+    if (!ros::ok() || release_handle.sendGoalAndWait(door_goal, ros::Duration(10.0), timeout) != SimpleClientGoalState::SUCCEEDED)
+    {
+      writeString("Release handle: failed to complete release_handle action.");
+      return -1;
+    }
     writeString("...Releasing handle finished");
   }
 
   // tuck arm
   writeString("Tuck arm...");
   switch_goal.start_controllers.clear();  switch_goal.stop_controllers.clear();
-  if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
-  if (!ros::ok() || tuck_arms.sendGoalAndWait(tuck_arms_goal, ros::Duration(65.0), ros::Duration(5.0)) != SimpleClientGoalState::SUCCEEDED) return -1;
+  if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED)
+  {
+    writeString("Tuck arm: (after release handle) failed to stop controllers with switch_controller action.");
+    return -1;
+  }
+  if (!ros::ok() || tuck_arms.sendGoalAndWait(tuck_arms_goal, ros::Duration(65.0), ros::Duration(5.0)) != SimpleClientGoalState::SUCCEEDED)
+  {
+    writeString("Tuck arm: (after release handle) failed to complete tuck_arms action.");
+    return -1;
+  }
   writeString("...Tuck arm finished");
 
 
@@ -303,10 +396,18 @@ int
   base_goal.target_pose.pose.orientation.y = 0.0;
   base_goal.target_pose.pose.orientation.z = 0.0;
   base_goal.target_pose.pose.orientation.w = 1.0;
+  writeString("Final phase: go to some goal past the door.");
   switch_goal.start_controllers.clear();  switch_goal.stop_controllers.clear();
-  if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED) return -1;
-  while (ros::ok() && move_base_local.sendGoalAndWait(base_goal, ros::Duration(60.0), timeout) != SimpleClientGoalState::SUCCEEDED) {writeString("re-trying move base local");};
-  writeString("...Moving to finished");
+  if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED)
+  {
+    writeString("Final phase: failed to stop controllers using switch_controller action.");
+    return -1;
+  }
+  while (ros::ok() && move_base_local.sendGoalAndWait(base_goal, ros::Duration(60.0), timeout) != SimpleClientGoalState::SUCCEEDED)
+  {
+    writeString("Final phase: possibly infinite loop for move_base_local action.");
+  };
+  writeString("Final phase: finished.");
 
   writeString("Done");
   return (0);

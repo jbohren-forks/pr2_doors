@@ -233,9 +233,15 @@ bool DetectHandleAction::laserDetection(const door_msgs::Door& door_in,
   ROS_INFO("tilt laser is at height %f, and door at distance %f", laser_height, dist);
 
   // set the laser scanner to intensity mode
-  ROS_WARN("dynamic_reconfigure of tilt_hokuyo_node is commented out, awaiting #3894 from simulation");
-  //system("rosrun dynamic_reconfigure dynparam set /tilt_hokuyo_node '{ intensity: true }'");
-  //system("rosrun dynamic_reconfigure dynparam set /tilt_hokuyo_node '{ skip: 1 }'");
+
+  NodeHandle node;
+  bool use_sim_time;
+  node.param("use_sim_time", use_sim_time, false);
+  if (!use_sim_time){
+    ROS_WARN("dynamic_reconfigure of tilt_hokuyo_node is commented out, awaiting #3894 from simulation");
+    system("rosrun dynamic_reconfigure dynparam set /tilt_hokuyo_node '{ intensity: true }'");
+    system("rosrun dynamic_reconfigure dynparam set /tilt_hokuyo_node '{ skip: 1 }'");
+  }
 
   // gets a point cloud from the point_cloud_srv
   if (action_server_.isPreemptRequested()) return false;

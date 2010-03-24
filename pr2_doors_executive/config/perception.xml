@@ -3,7 +3,7 @@
   <!-- Laser scan assembler -->
   <node pkg="laser_assembler" type="laser_scan_assembler_srv" name="laser_scan_assembler" respawn="false">
     <remap from="scan_in" to="tilt_scan"/>
-    <rosparam command="load" file="$(find 2dnav_pr2)/config/shadow_filter.yaml" />
+    <rosparam command="load" file="$(find pr2_navigation_perception)/config/shadow_filter.yaml" />
     <param name="tf_cache_time_secs" type="double" value="10.0" />
     <param name="max_scans" type="int" value="1000" />
     <param name="ignore_laser_skew" type="bool" value="true" />

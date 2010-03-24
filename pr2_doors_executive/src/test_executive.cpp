@@ -374,6 +374,13 @@ int
     writeString("Tuck arm: (after release handle) failed to stop controllers with switch_controller action.");
     return -1;
   }
+  tuck_arms_goal.untuck = false;    tuck_arms_goal.left = false; tuck_arms_goal.right = true;
+  if (!ros::ok() || tuck_arms.sendGoalAndWait(tuck_arms_goal, ros::Duration(30.0), ros::Duration(5.0)) != SimpleClientGoalState::SUCCEEDED)
+  {
+    writeString("Tuck arms: tuck_arms action failed to reach goal");
+    return -1;
+  }
+
   if (!ros::ok() || tuck_arms.sendGoalAndWait(tuck_arms_goal, ros::Duration(65.0), ros::Duration(5.0)) != SimpleClientGoalState::SUCCEEDED)
   {
     writeString("Tuck arm: (after release handle) failed to complete tuck_arms action.");
@@ -381,32 +388,36 @@ int
   }
   writeString("...Tuck arm finished");
 
+  bool use_sim_time;
+  node.param("use_sim_time", use_sim_time, false);
 
   // go to the last location
-  double X = 27.3095662355 + 3 - 25.7, Y = 25.8414441058 - 25.7;
-  std::ostringstream os6; os6 << "Moving to" << X << "," << Y;
-  writeString(os6.str());
-  base_goal.target_pose.header.frame_id = "/odom_combined";
-  base_goal.target_pose.pose.position.x = X;
-  base_goal.target_pose.pose.position.y = Y;
-  base_goal.target_pose.pose.position.z = 0;
-  base_goal.target_pose.pose.orientation.x = 0.0;
-  base_goal.target_pose.pose.orientation.y = 0.0;
-  base_goal.target_pose.pose.orientation.z = 0.0;
-  base_goal.target_pose.pose.orientation.w = 1.0;
-  writeString("Final phase: go to some goal past the door.");
-  switch_goal.start_controllers.clear();  switch_goal.stop_controllers.clear();
-  if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED)
-  {
-    writeString("Final phase: failed to stop controllers using switch_controller action.");
-    return -1;
+  if (use_sim_time){
+    double X = 27.3095662355 + 3 - 25.7, Y = 25.8414441058 - 25.7;
+    std::ostringstream os6; os6 << "Moving to" << X << "," << Y;
+    writeString(os6.str());
+    base_goal.target_pose.header.frame_id = "/odom_combined";
+    base_goal.target_pose.pose.position.x = X;
+    base_goal.target_pose.pose.position.y = Y;
+    base_goal.target_pose.pose.position.z = 0;
+    base_goal.target_pose.pose.orientation.x = 0.0;
+    base_goal.target_pose.pose.orientation.y = 0.0;
+    base_goal.target_pose.pose.orientation.z = 0.0;
+    base_goal.target_pose.pose.orientation.w = 1.0;
+    writeString("Final phase: go to some goal past the door.");
+    switch_goal.start_controllers.clear();  switch_goal.stop_controllers.clear();
+    if (!ros::ok() || switch_controller.sendGoalAndWait(switch_goal, ros::Duration(5.0), timeout) != SimpleClientGoalState::SUCCEEDED)
+      {
+	writeString("Final phase: failed to stop controllers using switch_controller action.");
+	return -1;
+      }
+    while (ros::ok() && move_base_local.sendGoalAndWait(base_goal, ros::Duration(60.0), timeout) != SimpleClientGoalState::SUCCEEDED)
+      {
+	writeString("Final phase: possibly infinite loop for move_base_local action.");
+      };
+    writeString("Final phase: finished.");
   }
-  while (ros::ok() && move_base_local.sendGoalAndWait(base_goal, ros::Duration(60.0), timeout) != SimpleClientGoalState::SUCCEEDED)
-  {
-    writeString("Final phase: possibly infinite loop for move_base_local action.");
-  };
-  writeString("Final phase: finished.");
-
+  
   writeString("Done");
   return (0);
 }

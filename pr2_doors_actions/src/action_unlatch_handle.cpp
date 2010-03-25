@@ -143,8 +143,8 @@ void UnlatchHandleAction::execute(const  door_msgs::DoorGoalConstPtr& goal)
     tff_pub_.publish(tff_handle_);
 
     // detect when gripper is not on hanlde
-    if (fabs(tff_state_.angular.x) > M_PI/2.0 || fabs(tff_state_.linear.y) > 0.1 || fabs(tff_state_.linear.z) > 0.1 || 
-	fabs(tff_state_.angular.y) > M_PI/8.0 || fabs(tff_state_.angular.z) > M_PI/8.0){
+    if (fabs(tff_state_.angular.x) > M_PI/2.0 || fabs(tff_state_.linear.y) > 0.1 || fabs(tff_state_.linear.z) > 0.1){
+      //fabs(tff_state_.angular.y) > M_PI/8.0 || fabs(tff_state_.angular.z) > M_PI/8.0){
       tff_pub_.publish(tff_stop_);
       lock.unlock();
       ROS_ERROR("UnlatchHandleAction: Gripper was not on door handle");

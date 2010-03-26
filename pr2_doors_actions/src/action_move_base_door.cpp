@@ -63,9 +63,17 @@ MoveBaseDoorAction::MoveBaseDoorAction(tf::TransformListener& tf) :
   ros::NodeHandle node;
   base_pub_ = node.advertise<geometry_msgs::Twist>("base_controller/command", 10);
 
-  search_pattern_.push_back(0.0);
-  search_pattern_.push_back(-1.0);
-  search_pattern_.push_back(1.0);
+  search_pattern_sideways_.push_back(0.0);
+  search_pattern_sideways_.push_back(-1.0);
+  search_pattern_sideways_.push_back(1.0);
+  search_pattern_sideways_.push_back(-1.0);
+  search_pattern_sideways_.push_back(1.0);
+
+  search_pattern_forward_.push_back(1.0);
+  search_pattern_forward_.push_back(1.0);
+  search_pattern_forward_.push_back(1.0);
+  search_pattern_forward_.push_back(0.0);
+  search_pattern_forward_.push_back(0.0);
 
   footprint_ = costmap_ros_.getRobotFootprint();
 };
@@ -166,8 +174,8 @@ void MoveBaseDoorAction::execute(const door_msgs::DoorGoalConstPtr& goal)
     // find next valid robot pose
     tf::Vector3 next_position;
     bool success = false;
-    for (int i=0; i<(int)search_pattern_.size(); i++){
-      next_position = current_position +  (motion_direction*motion_step)  + (search_direction * motion_step * search_pattern_[i]);
+    for (int i=0; i<(int)search_pattern_sideways_.size(); i++){
+      next_position = current_position +  (motion_direction*motion_step*search_pattern_forward_[i])  + (search_direction * motion_step * search_pattern_sideways_[i]);
 
       // check in costmap if this is valid robot pose
       if (costmap_model_.footprintCost(toPoint(next_position), 

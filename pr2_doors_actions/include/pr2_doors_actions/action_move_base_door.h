@@ -74,7 +74,7 @@ private:
   ros::Publisher base_pub_;
 
   actionlib::SimpleActionServer<door_msgs::DoorAction> action_server_;
-  std::vector<double> search_pattern_;
+  std::vector<double> search_pattern_forward_, search_pattern_sideways_;
   std::vector<geometry_msgs::Point> footprint_;
 };
 

@@ -51,6 +51,7 @@
 
 #include <pr2_doors_common/door_functions.h>
 #include <std_msgs/String.h>
+#include <std_srvs/Empty.h>
 
 using namespace ros;
 using namespace std;
@@ -134,6 +135,7 @@ int
   actionlib::SimpleActionClient<door_msgs::DoorAction> open_door("open_door", true);
   actionlib::SimpleActionClient<door_msgs::DoorAction> release_handle("release_handle", true);
   actionlib::SimpleActionClient<door_msgs::DoorAction> move_base_door("move_base_door", true);
+  ros::ServiceClient move_base_clear = node.serviceClient<std_srvs::Empty>("move_base_local_node/clear_unknown_space");
 
   writeString("waiting for switch controller action server...");
   switch_controller.waitForServer();
@@ -335,11 +337,17 @@ int
   }
   writeString("...Tuck arm finished");
 
+
   bool use_sim_time;
   node.param("use_sim_time", use_sim_time, false);
 
   // go to the last location
   if (use_sim_time){
+    writeString("Clearing out the cost map.");
+    std_srvs::Empty clear_srv;
+    move_base_clear.call(clear_srv);
+
+
     double X = 27.3095662355 + 3 - 25.7, Y = 25.8414441058 - 25.7;
     std::ostringstream os6; os6 << "Moving to" << X << "," << Y;
     writeString(os6.str());

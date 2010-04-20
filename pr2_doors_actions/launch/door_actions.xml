@@ -54,7 +54,8 @@
   </group>
 
   <!-- Trajectory generator -->
-  <node pkg="joint_trajectory_generator" type="joint_trajectory_generator" output="screen" name="joint_trajectory_generator_unwrap" ns="r_arm_plugs_controller" args="generator_action_name:=joint_trajectory_generator_unwrap">
+  <node pkg="joint_trajectory_generator" type="joint_trajectory_generator" output="screen" name="joint_trajectory_generator_unwrap" ns="r_arm_controller">
+    <remap from="generator_action_name" to="joint_trajectory_generator_unwrap" />
     <param name="max_acc" value="2.0" />
     <param name="max_vel" value="2.5" />
     <param name="unwrap" value="true" />

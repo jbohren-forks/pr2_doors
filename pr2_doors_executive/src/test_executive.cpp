@@ -135,6 +135,8 @@ int
   actionlib::SimpleActionClient<door_msgs::DoorAction> open_door("open_door", true);
   actionlib::SimpleActionClient<door_msgs::DoorAction> release_handle("release_handle", true);
   actionlib::SimpleActionClient<door_msgs::DoorAction> move_base_door("move_base_door", true);
+
+  // only supported in latest, not in boxturlte
   ros::ServiceClient move_base_clear = node.serviceClient<std_srvs::Empty>("move_base_local_node/clear_unknown_space");
 
   writeString("waiting for switch controller action server...");
@@ -345,6 +347,7 @@ int
   if (use_sim_time){
     writeString("Clearing out the cost map.");
     std_srvs::Empty clear_srv;
+    // only supported in latest, not in boxturtle
     move_base_clear.call(clear_srv);
 
 

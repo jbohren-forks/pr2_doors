@@ -41,7 +41,9 @@ from move_base_msgs.msg import *
 from pr2_common_action_msgs.msg import *
 from std_msgs.msg import *
 
+import threading
 
+import door_functions
 
 def doorResultCb(userdata, result_status, result):
     userdata.door = result.door
@@ -49,6 +51,18 @@ def doorResultCb(userdata, result_status, result):
 def doorGoalCb(userdata, goal):
     return DoorGoal(userdata.door)
 
+def get_approach_goal(userdata, goal):
+  target_pose = door_functions.get_robot_pose(userdata.door, -0.7)
+  return MoveBaseGoal(target_pose)
+
+class SwitchControllersState(smach.SimpleActionState):
+  def __init__(self, stop_controllers, start_controllers):
+    smach.SimpleActionState.__init__(self,
+        'switch_controllers',
+        SwitchControllersAction,
+        goal = SwitchControllersGoal(
+          stop_controllers = stop_controllers,
+          start_controllers = start_controllers))
 
 def main():
     rospy.init_node('doors_executive')
@@ -73,7 +87,7 @@ def main():
     # Door detector state
     class DetectDoorState(State):
         def __init__(self, action_name):
-            State.__init__(self, outcomes=['open', 'closed', 'aborted'])
+            State.__init__(self, outcomes=['unlatched', 'closed', 'aborted'])
             self.ac = SimpleActionClient(action_name, DoorAction)
             if not self.ac.wait_for_server(rospy.Duration(30)):
                 rospy.logerr('Door detector failed to connect to action server')
@@ -81,7 +95,7 @@ def main():
             if self.ac.send_goal_and_wait(DoorGoal(self.userdata.door), rospy.Duration(30), rospy.Duration(30)):
                 self.userdata.door = self.ac.get_result().door
                 if self.userdata.door.latch_state == Door.UNLATCHED:
-                    return 'open'
+                    return 'unlatched'
                 else:
                     return 'closed'
             else:
@@ -92,21 +106,79 @@ def main():
     sm.local_userdata.door = prior_door
 
     sm.add(('TUCK_ARMS', SimpleActionState('tuck_arms', TuckArmsAction, TuckArmsGoal(False, True, True)),
-            {'succeeded': 'DETECT_DOOR', 'aborted': 'TUCK_ARMS', 'preempted': 'preempted'}))
+            { 'succeeded': 'DETECT_DOOR',
+              'aborted': 'TUCK_ARMS'}))
     
     sm.add(('DETECT_DOOR', DetectDoorState('detect_door'),
-            {'closed': 'DETECT_HANDLE', 'open': 'aborted', 'aborted': 'DETECT_DOOR'}))
+            { 'closed': 'DETECT_HANDLE',
+              'unlatched': 'TOUCH_DOOR',
+              'aborted': 'DETECT_DOOR'}))
 
+    # Sequence for opening the door with the handle
     sm.add(('DETECT_HANDLE', SimpleActionState('detect_handle', DoorAction, goal_cb = doorGoalCb, result_cb = doorResultCb),
-            {'succeeded': 'succeeded', 'aborted': 'DETECT_HANDLE', 'preempted': 'preempted'}))
+            { 'succeeded': 'APPROACH_DOOR',
+              'aborted': 'DETECT_HANDLE'}))
+    sm.add(('APPROACH_DOOR',
+      SimpleActionState('pr2_move_base_local', MoveBaseAction, goal_cb = get_approach_goal),
+      { 'succeeded':'GRASP_HANDLE',
+        'aborted':'APPROACH_DOOR'}))
 
+    sm.add(('GRASP_HANDLE',
+      SimpleActionState('grasp_handle', DoorAction, goal_cb = doorGoalCb),
+      { 'succeeded':'TFF_START',
+        'aborted':'APPROACH_DOOR'}))
+
+    sm.add(('TFF_START',
+      SwitchControllersState(
+        stop_controllers = ["r_arm_controller"],
+        start_controllers = ["r_arm_cartesian_tff_controller"]),
+      { 'succeeded':'TURN_HANDLE' }))
+
+    sm.add(('TURN_HANDLE',
+      SimpleActionState('unlatch_handle',DoorAction,goal_cb = doorGoalCb),
+      { 'succeeded':'OPEN_DOOR'}))
+
+    open_door = smach.ConcurrentSplit(['succeeded','aborted','preempted'])
+    open_door.set_retrieve_keys(['door'])
+    open_door.add(
+        ('OPEN_DOOR',SimpleActionState('open_door',DoorAction, goal_cb = doorGoalCb)),
+        ('MOVE_THROUGH',SimpleActionState('move_base_door',DoorAction, goal_cb = doorGoalCb)))
+    open_door.set_slave_states(['OPEN_DOOR'])
+    open_door.add_outcome_map(
+        ({'MOVE_THROUGH':'succeeded'},'succeeded'),
+        ({'MOVE_THROUGH':'aborted'},'aborted'),
+        ({'MOVE_THROUGH':'preempted'},'preempted'))
+    sm.add(('OPEN_DOOR',open_door,{}))
+
+    # Sequence for pushing the door
+    sm.add(('TOUCH_DOOR',
+      SimpleActionState('touch_door', DoorAction, goal_cb = doorGoalCb),
+      {'succeeded':'PUSH_DOOR','aborted':'TOUCH_DOOR'}))
+
+    push_door = smach.ConcurrentSplit(['succeeded','aborted','preempted'])
+    push_door.add(
+        ('PUSH_DOOR',SimpleActionState('push_door',DoorAction, goal_cb = doorGoalCb)),
+        ('MOVE_THROUGH',SimpleActionState('move_base_door',DoorAction, goal_cb = doorGoalCb)))
+    push_door.set_slave_states('PUSH_DOOR')
+    push_door.add_outcome_map(
+        ({'MOVE_THROUGH':'succeeded'},'succeeded'),
+        ({'MOVE_THROUGH':'aborted'},'aborted'),
+        ({'MOVE_THROUGH':'preempted'},'preempted'))
+    sm.add(('PUSH_DOOR',push_door,{}))
+
+
+
+    intro_server = smach.IntrospectionServer('doorman',sm,'/doorman')
 
     sm.set_initial_state(['TUCK_ARMS'])
 
     sm.enter()
 
-    print sm.local_userdata.door
 
 
 if __name__ == "__main__":
     main()
+    print threading.enumerate()
+    rospy.signal_shutdown('Done')
+    print threading.enumerate()
+

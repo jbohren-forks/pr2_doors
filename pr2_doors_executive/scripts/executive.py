@@ -148,7 +148,23 @@ def main():
         ({'MOVE_THROUGH':'succeeded'},'succeeded'),
         ({'MOVE_THROUGH':'aborted'},'aborted'),
         ({'MOVE_THROUGH':'preempted'},'preempted'))
-    sm.add(('OPEN_DOOR',open_door,{}))
+    sm.add(('OPEN_DOOR',open_door,
+      { 'succeeded':'TFF_STOP' }))
+
+    sm.add(('TFF_STOP',
+      SwitchControllersState(
+        stop_controllers = ["r_arm_cartesian_tff_controller"],
+        start_controllers = ["r_arm_controller"]),
+      { 'succeeded':'RELEASE_HANDLE' }))
+
+    sm.add(('RELEASE_HANDLE',
+      SimpleActionState('release_handle',DoorAction,goal_cb = doorGoalCb),
+      { 'succeeded':'FINISH_TUCK_ARMS'}))
+
+    sm.add(('FINISH_TUCK_ARMS', SimpleActionState('tuck_arms', TuckArmsAction, TuckArmsGoal(False, True, True)),
+            { 'succeeded': 'succeeded'}))
+    
+
 
     # Sequence for pushing the door
     sm.add(('TOUCH_DOOR',

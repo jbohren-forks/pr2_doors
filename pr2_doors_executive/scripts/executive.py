@@ -51,6 +51,10 @@ def doorResultCb(userdata, result_status, result):
 def doorGoalCb(userdata, goal):
     return DoorGoal(userdata.door)
 
+def get_approach_detect_goal(userdata, goal):
+  target_pose = door_functions.get_robot_pose(userdata.door, -1.5)
+  return MoveBaseGoal(target_pose)
+
 def get_approach_goal(userdata, goal):
   target_pose = door_functions.get_robot_pose(userdata.door, -0.7)
   return MoveBaseGoal(target_pose)
@@ -126,7 +130,20 @@ def main():
     sm.add(('GRASP_HANDLE',
       SimpleActionState('grasp_handle', DoorAction, goal_cb = doorGoalCb),
       { 'succeeded':'TFF_START',
-        'aborted':'APPROACH_DOOR'}))
+        'aborted':'RECOVER_RELEASE_HANDLE'}))
+
+    sm.add(('RECOVER_RELEASE_HANDLE',
+      SimpleActionState('release_handle',DoorAction,goal_cb = doorGoalCb),
+      { 'succeeded':'RECOVER_TUCK_ARMS',
+        'aborted':'RECOVER_RELEASE_HANDLE'}))
+    sm.add(('RECOVER_TUCK_ARMS', SimpleActionState('tuck_arms', TuckArmsAction, TuckArmsGoal(False, True, True)),
+            { 'succeeded': 'APPROACH_DETECT_POSE',
+              'aborted': 'RECOVER_TUCK_ARMS'}))
+    sm.add(('APPROACH_DETECT_POSE',
+      SimpleActionState('pr2_move_base_local', MoveBaseAction, goal_cb = get_approach_detect_goal),
+      { 'succeeded':'DETECT_DOOR',
+        'aborted':'APPROACH_DETECT_POSE'}))
+
 
     sm.add(('TFF_START',
       SwitchControllersState(

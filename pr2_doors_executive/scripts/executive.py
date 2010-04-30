@@ -97,13 +97,13 @@ def main():
                 rospy.logerr('Door detector failed to connect to action server')
         def enter(self):
             if self.ac.send_goal_and_wait(DoorGoal(self.userdata.door), rospy.Duration(30), rospy.Duration(30)):
-                self.userdata.door = self.ac.get_result().door
+                result = self.ac.get_result() 
+                self.userdata.door = result.door
                 if self.userdata.door.latch_state == Door.UNLATCHED:
                     return 'unlatched'
                 else:
                     return 'closed'
-            else:
-                return 'aborted'
+            return 'aborted'
 
     # construct state machine
     sm = StateMachine(['succeeded', 'aborted', 'preempted'])
@@ -115,7 +115,7 @@ def main():
     
     sm.add(('DETECT_DOOR', DetectDoorState('detect_door'),
             { 'closed': 'DETECT_HANDLE',
-              'unlatched': 'TOUCH_DOOR',
+              'unlatched': 'aborted',
               'aborted': 'DETECT_DOOR'}))
 
     # Sequence for opening the door with the handle
@@ -151,9 +151,17 @@ def main():
         start_controllers = ["r_arm_cartesian_tff_controller"]),
       { 'succeeded':'TURN_HANDLE' }))
 
-    sm.add(('TURN_HANDLE',
-      SimpleActionState('unlatch_handle',DoorAction,goal_cb = doorGoalCb),
-      { 'succeeded':'OPEN_DOOR'}))
+    sm.add(
+        ('TURN_HANDLE',
+          SimpleActionState('unlatch_handle',DoorAction,goal_cb = doorGoalCb),
+        { 'succeeded':'OPEN_DOOR'}))
+    """
+    sm.add(
+        label = 'TURN_HANDLE',
+        state = SimpleActionState('unlatch_handle',DoorAction,goal_cb = doorGoalCb),
+        outcomes = { 'succeeded':'OPEN_DOOR'},
+        resources = )
+    """
 
     open_door = smach.ConcurrentSplit(['succeeded','aborted','preempted'])
     open_door.set_retrieve_keys(['door'])
@@ -183,6 +191,7 @@ def main():
     
 
 
+    """
     # Sequence for pushing the door
     sm.add(('TOUCH_DOOR',
       SimpleActionState('touch_door', DoorAction, goal_cb = doorGoalCb),
@@ -198,20 +207,23 @@ def main():
         ({'MOVE_THROUGH':'aborted'},'aborted'),
         ({'MOVE_THROUGH':'preempted'},'preempted'))
     sm.add(('PUSH_DOOR',push_door,{}))
+    """
 
-
-
-    intro_server = smach.IntrospectionServer('doorman',sm,'/doorman')
 
     sm.set_initial_state(['TUCK_ARMS'])
 
-    sm.enter()
+    intro_server = smach.IntrospectionServer('doorman',sm,'/doorman')
+    intro_server.start()
 
+    sm_thread = threading.Thread(target=sm.enter)
+    sm_thread.start()
 
+    rospy.spin()
 
-if __name__ == "__main__":
+    sm_thread.join()
+
+    intro_server.stop()
+
+if __name__ == '__main__':
     main()
-    print threading.enumerate()
-    rospy.signal_shutdown('Done')
-    print threading.enumerate()
 

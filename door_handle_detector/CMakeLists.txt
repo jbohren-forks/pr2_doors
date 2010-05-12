@@ -59,7 +59,7 @@ rosbuild_add_executable(test_preempt_service test/test_preempt_service.cpp)
 
 # Helper macro
 macro(rostest_door_handle _test_name _md5)
-    rosbuild_download_test_data(http://pr.willowgarage.com/data/door_handle_detector/${_test_name}.bag test/${_test_name}.bag ${_md5})
+    rosbuild_download_test_data(http://pr.willowgarage.com/data/door_handle_detector/${_test_name}_indexed.bag test/${_test_name}.bag ${_md5})
     # Temporarily labeling these tests "disabled" to stop Hudson from running
     # them.
     rosbuild_add_rostest_labeled(disabled test/${_test_name}.launch)
@@ -70,17 +70,17 @@ endmacro(rostest_door_handle)
 # the handle
 rosbuild_add_executable(point_cloud_cropper test/point_cloud_cropper.cpp)
 
-rostest_door_handle(door_closed_39 6b54137ee858e24a401795675f44d332) 
-rostest_door_handle(door_closed_conference_1 e3e57c8fcf3acd1f9c9d85f061d58b37) 
-rostest_door_handle(door_closed_josh c0644c3635e8df1b1a40ead667935b6e) 
-rostest_door_handle(door_closed_kurt 7b48ec98e20fcb63751a9eac01baefa5) 
-rostest_door_handle(door_closed_tully 7bf37c10359d97e6cc76343ea8dccf74) 
-rostest_door_handle(door_closed_alex 6adf24f678b45ec3ad666373bdc152ff) 
-rostest_door_handle(door_closed_ethan e48348cdc11f952268846958d62b5d74) 
-rostest_door_handle(door_closed_john 2c6459a3ab312a3e7025c01d11b1c6c5) 
-rostest_door_handle(door_closed_melonee_3 3db31518e7ba069996c2ea0f8439042d) 
-rostest_door_handle(door_closed_victoria 1fafa38b7a96539e64f5aadd33be2c93) 
-rostest_door_handle(door_closed_vijay e75827f3bbbc343266386510c4546be7) 
+rostest_door_handle(door_closed_39 f989df140e811c0804d616ac8824c72c) 
+rostest_door_handle(door_closed_conference_1 434f223fda025e7b8292f86714138257) 
+rostest_door_handle(door_closed_josh 656c9bd2762229860563ac82efa16dd1) 
+rostest_door_handle(door_closed_kurt 6a203e9d80833f0c92913930da4e9564) 
+rostest_door_handle(door_closed_tully 5318bf89547d700afd20149c3a3f64a6) 
+rostest_door_handle(door_closed_alex 89971f486a47e49f3acbc5e842dfbb8d) 
+rostest_door_handle(door_closed_ethan 1480a32b60b80a2cc3afbd137b4290fe) 
+rostest_door_handle(door_closed_john cfb19906553d36a0b1e593b6b6b09b8b) 
+rostest_door_handle(door_closed_melonee_3 4dececd18ed463dce6d6e0eb3c732bfe) 
+rostest_door_handle(door_closed_victoria 58cf207d475c391b149258d4de8eec5a) 
+rostest_door_handle(door_closed_vijay 3cd2e907a059cee5799adb13314c856e) 
 
 
 # Currently failing tests below

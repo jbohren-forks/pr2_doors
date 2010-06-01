@@ -47,6 +47,7 @@
 #include <tf/transform_datatypes.h>
 #include <control_toolbox/pid.h>
 #include <boost/scoped_ptr.hpp>
+#include <boost/thread/condition.hpp>
 #include <realtime_tools/realtime_publisher.h>
 
 

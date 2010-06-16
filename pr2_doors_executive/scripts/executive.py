@@ -39,6 +39,7 @@ from executive_python_msgs.msg import *
 from door_msgs.msg import *
 from move_base_msgs.msg import *
 from pr2_common_action_msgs.msg import *
+from pr2_controllers_msgs.msg import *
 from std_msgs.msg import *
 
 import threading
@@ -97,6 +98,11 @@ def main():
     sm.local_userdata.door = prior_door
 
     with sm:
+        StateMachine.add('INIT_CONTROLLERS',
+                SwitchControllersState(
+                    stop_controllers = ["r_arm_cartesian_tff_controller"],
+                    start_controllers = ["r_arm_controller"]),
+                { 'succeeded':'TUCK_ARMS' })
         StateMachine.add('TUCK_ARMS',
                 SimpleActionState('tuck_arms', TuckArmsAction, TuckArmsGoal(False, True, True)),
                 { 'succeeded': 'DETECT_DOOR',
@@ -121,6 +127,20 @@ def main():
                 SimpleActionState('pr2_move_base_local', MoveBaseAction, goal_cb = get_approach_goal),
                 { 'succeeded':'GRASP_HANDLE',
                     'aborted':'APPROACH_DOOR'})
+
+        StateMachine.add('UNTUCK_FOR_GRASP',
+                SimpleActionState('tuck_arms', TuckArmsAction, TuckArmsGoal(True, False, True)),
+                { 'succeeded': 'GRASP_HANDLE',
+                    'aborted': 'aborted'})
+
+        open_gripper_goal = Pr2GripperCommandGoal()
+        open_gripper_goal.command.position = 0.07
+        open_gripper_goal.command.max_effort = 99999
+        StateMachine.add('OPEN_GRIPPER',
+                SimpleActionState('r_gripper_controller/gripper_action',
+                    Pr2GripperCommandAction,
+                    goal = open_gripper_goal),
+                {'succeeded':'GRASP_HANDLE'})
 
         StateMachine.add('GRASP_HANDLE',
                 SimpleActionState('grasp_handle', DoorAction, goal_slots = ['door']),
@@ -163,7 +183,7 @@ def main():
 
         open_door = Concurrence(['succeeded','aborted','preempted'],default_outcome=['aborted'])
         with open_door:
-            Container.set_retrieve_keys(['door'])
+            Concurrence.set_retrieve_ud_keys(['door'])
             Concurrence.add('MOVE_THROUGH',SimpleActionState('move_base_door',DoorAction, goal_slots = ['door']))
             Concurrence.add_slave('OPEN_DOOR',SimpleActionState('open_door',DoorAction, goal_slots = ['door']))
             Concurrence.add_outcome_map('succeeded',{'MOVE_THROUGH':'succeeded'})

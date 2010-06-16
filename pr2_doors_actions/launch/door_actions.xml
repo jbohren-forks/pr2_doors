@@ -64,7 +64,11 @@
 
   <!-- arm ik action server -->
   <node pkg="pr2_arm_ik_action" type="arm_ik" name="r_arm_ik" output="screen">
-    <rosparam command="load" file="$(find pr2_doors_actions)/config/arm_ik_r_arm.yaml"/>
+    <param name="joint_trajectory_action" value="joint_trajectory_generator" />
+    <param name="arm" value="r" />
+    <param name="free_angle" value="2" />
+    <param name="search_discretization" value="0.01" />
+    <param name="ik_timeout" value="5.0" />
   </node>
   
   <!--node pkg="pr2_plugs_actions" type="tf_publish.py" args="r_arm_ik/goal PR2ArmIKActionGoal goal.pose r_arm_ik_goal" name="tf_r_arm_ik_goal" output="screen" /-->  

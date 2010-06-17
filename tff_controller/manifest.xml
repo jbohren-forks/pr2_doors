@@ -15,6 +15,7 @@
   <depend package="realtime_tools"/>
   <depend package="control_toolbox"/>
   <depend package="geometry_msgs"/>
+  <depend package="pluginlib" />
 
   <export>
     <cpp cflags="-I${prefix}/include -I${prefix}/msg/cpp"

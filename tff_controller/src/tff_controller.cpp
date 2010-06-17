@@ -37,8 +37,7 @@
 #include <pluginlib/class_list_macros.h>
 
 
-PLUGINLIB_REGISTER_CLASS(TFFController, controller::TFFController, pr2_controller_interface::Controller)
-
+PLUGINLIB_DECLARE_CLASS(tf_controllers, TFFController, controller::TFFController, pr2_controller_interface::Controller)
 
 using namespace KDL;
 using namespace ros;

@@ -58,6 +58,10 @@
     <param name="max_acc" value="2.0" />
     <param name="max_vel" value="2.5" />
   </node>
+  <node pkg="joint_trajectory_generator" type="joint_trajectory_generator" output="screen" name="joint_trajectory_generator" ns="l_arm_controller">
+    <param name="max_acc" value="2.0" />
+    <param name="max_vel" value="2.5" />
+  </node>
 
 
   <!-- arm ik action server -->

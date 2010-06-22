@@ -75,29 +75,13 @@ class DetectDoorState(State):
 def main():
     rospy.init_node('doors_executive')
 
-    # initial door
-    prior_door = Door()
-    prior_door.frame_p1.x = 1.0
-    prior_door.frame_p1.y = -0.5
-    prior_door.frame_p2.x = 1.0
-    prior_door.frame_p2.y = 0.5
-    prior_door.door_p1.x = 1.0
-    prior_door.door_p1.y = -0.5
-    prior_door.door_p2.x = 1.0
-    prior_door.door_p2.y = 0.5
-    prior_door.travel_dir.x = 1.0
-    prior_door.travel_dir.y = 0.0
-    prior_door.travel_dir.z = 0.0
-    prior_door.rot_dir = Door.ROT_DIR_COUNTERCLOCKWISE
-    prior_door.hinge = Door.HINGE_P2
-    prior_door.header.frame_id = "base_footprint"
 
 
     # construct state machine
     sm = StateMachine(['succeeded', 'aborted', 'preempted'])
-    sm.local_userdata.door = prior_door
 
     with sm:
+        StateMachine.share_parent_userdata()
         StateMachine.add('INIT_CONTROLLERS',
                 SwitchControllersState(
                     stop_controllers = ["r_arm_cartesian_tff_controller"],
@@ -206,7 +190,6 @@ def main():
                 { 'succeeded': 'succeeded'})
         
 
-
         """
         # Sequence for pushing the door
         StateMachine.add('TOUCH_DOOR',
@@ -229,13 +212,15 @@ def main():
     intro_server = IntrospectionServer('doorman',sm,'/DOORMAN')
     intro_server.start()
 
-    sm_thread = threading.Thread(target=sm.enter)
-    sm_thread.start()
+    action_server_acquire = ActionServerWrapper('move_through_door', DoorAction,
+                                                wrapped_container = sm,
+                                                goal_slots_map = {'door': 'door'},
+                                                succeeded_outcomes = ['succeeded'],
+                                                aborted_outcomes = ['aborted'],
+                                                preempted_outcomes = ['preeempted'])
+    action_server_acquire.run_server()
 
     rospy.spin()
-
-    sm_thread.join()
-
     intro_server.stop()
 
 if __name__ == '__main__':

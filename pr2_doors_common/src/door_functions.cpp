@@ -61,7 +61,7 @@ namespace pr2_doors_common
     robot_pose.frame_id_ = door.header.frame_id;
     robot_pose.stamp_ = door.header.stamp;
     robot_pose.setOrigin( tf::Vector3(robot_pos(0), robot_pos(1), robot_pos(2)));
-    robot_pose.setRotation( tf::Quaternion(getVectorAngle(x_axis, frame_normal), 0, 0) ); 
+    robot_pose.setRotation( tf::createQuaternionFromRPY(getVectorAngle(x_axis, frame_normal), 0, 0) ); 
     
     return robot_pose;  
   }
@@ -111,7 +111,7 @@ namespace pr2_doors_common
     gripper_pose.frame_id_ = door.header.frame_id;
     gripper_pose.stamp_ = door.header.stamp;
     gripper_pose.setOrigin( tf::Vector3(gripper_pos(0), gripper_pos(1), gripper_height));
-    gripper_pose.setRotation( tf::Quaternion(getVectorAngle(x_axis, normal_frame)+angle, 0, 0) ); 
+    gripper_pose.setRotation( tf::createQuaternionFromRPY(getVectorAngle(x_axis, normal_frame)+angle, 0, 0) ); 
     
     return gripper_pose;  
   }
@@ -144,11 +144,11 @@ namespace pr2_doors_common
     gripper_pose.setOrigin( tf::Vector3(gripper_pos(0), gripper_pos(1), gripper_height));
     if(side == door_msgs::DoorCmd::PULL)
     {
-      gripper_pose.setRotation( tf::Quaternion(getVectorAngle(-x_axis, normal_frame)+angle, 0, 0) ); 
+      gripper_pose.setRotation( tf::createQuaternionFromRPY(getVectorAngle(-x_axis, normal_frame)+angle, 0, 0) ); 
     }
     else
     {
-      gripper_pose.setRotation( tf::Quaternion(getVectorAngle(x_axis, normal_frame)+angle, 0, 0) ); 
+      gripper_pose.setRotation( tf::createQuaternionFromRPY(getVectorAngle(x_axis, normal_frame)+angle, 0, 0) ); 
     }
     return gripper_pose;  
   }
@@ -215,9 +215,9 @@ namespace pr2_doors_common
     handle_pose.frame_id_ = door.header.frame_id;
     handle_pose.stamp_ = door.header.stamp;
     handle_pose.setOrigin( tf::Vector3(handle_pos(0), handle_pos(1), gripper_height));
-    handle_pose.setRotation( tf::Quaternion(getVectorAngle(x_axis, normal_frame)+angle, 0, 0) ); 
+    handle_pose.setRotation( tf::createQuaternionFromRPY(getVectorAngle(x_axis, normal_frame)+angle, 0, 0) ); 
     
-    tf::Pose gripper_rotate(tf::Quaternion(0.0,0.0,M_PI/2.0),tf::Vector3(0.0,0.0,0.0));
+    tf::Pose gripper_rotate(tf::createQuaternionFromRPY(0.0,0.0,M_PI/2.0),tf::Vector3(0.0,0.0,0.0));
     handle_pose.mult(handle_pose,gripper_rotate);
     return handle_pose;  
   }

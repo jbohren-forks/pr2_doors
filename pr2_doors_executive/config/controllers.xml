@@ -6,7 +6,7 @@
 
 <!-- tff controller -->
   <group ns="r_arm_cartesian_tff_controller" clear_params="true">
-    <param name="type" type="string" value="TFFController" />
+    <param name="type" type="string" value="tff_controller/TFFController" />
     <param name="root_name" type="string" value="torso_lift_link" />
     <param name="tip_name" type="string" value="r_gripper_tool_frame" />
 

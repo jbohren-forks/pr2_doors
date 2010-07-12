@@ -26,7 +26,6 @@
   <depend package="actionlib_msgs" />
   <depend package="pr2_controllers_msgs"/>
 
-  <depend package="pr2_tilt_laser_profile" />
   <depend package="door_handle_detector" />
   <depend package="pr2_doors_common"/>
   <depend package="tff_controller"/>

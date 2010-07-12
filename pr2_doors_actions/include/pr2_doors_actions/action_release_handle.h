@@ -47,7 +47,7 @@
 #include <actionlib/server/simple_action_server.h>
 #include <actionlib/client/simple_action_client.h>
 #include <pr2_controllers_msgs/Pr2GripperCommandAction.h>
-#include <pr2_common_action_msgs/PR2ArmIKAction.h>
+#include <pr2_common_action_msgs/ArmMoveIKAction.h>
 
 
 namespace door_handle_detector{
@@ -69,8 +69,8 @@ private:
 
   actionlib::SimpleActionClient<pr2_controllers_msgs::Pr2GripperCommandAction> gripper_action_client_;  
 
-  actionlib::SimpleActionClient<pr2_common_action_msgs::PR2ArmIKAction> ik_action_client_;
-  pr2_common_action_msgs::PR2ArmIKGoal ik_goal_;
+  actionlib::SimpleActionClient<pr2_common_action_msgs::ArmMoveIKAction> ik_action_client_;
+  pr2_common_action_msgs::ArmMoveIKGoal ik_goal_;
 };
 
 }

@@ -88,7 +88,7 @@ def main():
                     start_controllers = ["r_arm_controller"]),
                 { 'succeeded':'TUCK_ARMS' })
         StateMachine.add('TUCK_ARMS',
-                SimpleActionState('tuck_arms', TuckArmsAction, TuckArmsGoal(False, True, True)),
+                SimpleActionState('tuck_arms', TuckArmsAction, TuckArmsGoal(True, True)),
                 { 'succeeded': 'DETECT_DOOR',
                     'aborted': 'TUCK_ARMS'})
         
@@ -113,7 +113,7 @@ def main():
                     'aborted':'APPROACH_DOOR'})
 
         StateMachine.add('UNTUCK_FOR_GRASP',
-                SimpleActionState('tuck_arms', TuckArmsAction, TuckArmsGoal(True, False, True)),
+                SimpleActionState('tuck_arms', TuckArmsAction, TuckArmsGoal(True, False)),
                 { 'succeeded': 'GRASP_HANDLE',
                     'aborted': 'aborted'})
 
@@ -135,7 +135,7 @@ def main():
                 SimpleActionState('release_handle',DoorAction,goal_slots = ['door']),
                 { 'succeeded':'RECOVER_TUCK_ARMS',
                     'aborted':'RECOVER_RELEASE_HANDLE'})
-        StateMachine.add('RECOVER_TUCK_ARMS', SimpleActionState('tuck_arms', TuckArmsAction, TuckArmsGoal(False, True, True)),
+        StateMachine.add('RECOVER_TUCK_ARMS', SimpleActionState('tuck_arms', TuckArmsAction, TuckArmsGoal(True, True)),
                 { 'succeeded': 'APPROACH_DETECT_POSE',
                     'aborted': 'RECOVER_TUCK_ARMS'})
 
@@ -186,7 +186,7 @@ def main():
                 SimpleActionState('release_handle',DoorAction,goal_slots = ['door']),
                 { 'succeeded':'FINISH_TUCK_ARMS'})
 
-        StateMachine.add('FINISH_TUCK_ARMS', SimpleActionState('tuck_arms', TuckArmsAction, TuckArmsGoal(False, True, True)),
+        StateMachine.add('FINISH_TUCK_ARMS', SimpleActionState('tuck_arms', TuckArmsAction, TuckArmsGoal(True, True)),
                 { 'succeeded': 'succeeded'})
         
 

@@ -39,6 +39,7 @@ from executive_python_msgs.msg import *
 from door_msgs.msg import *
 from move_base_msgs.msg import *
 from pr2_common_action_msgs.msg import *
+from pr2_mechanism_msgs.srv import SwitchController, SwitchControllerRequest
 from pr2_controllers_msgs.msg import *
 from std_msgs.msg import *
 
@@ -46,14 +47,21 @@ import threading
 
 import door_functions
 
-class SwitchControllersState(SimpleActionState):
+class SwitchControllersState(State):
     def __init__(self, stop_controllers, start_controllers):
-        SimpleActionState.__init__(self,
-                'switch_controllers',
-                SwitchControllersAction,
-                goal = SwitchControllersGoal(
-                    stop_controllers = stop_controllers,
-                    start_controllers = start_controllers))
+        State.__init__(self, outcomes=['succeeded', 'aborted'])
+        rospy.wait_for_service('pr2_controller_manager/switch_controller')
+        self.srv = rospy.ServiceProxy('pr2_controller_manager/switch_controller', SwitchController)
+        self.start_list = start_controllers
+        self.stop_list = stop_controllers
+
+    def enter(self):
+        try:
+            self.srv(self.start_list, self.stop_list, SwitchControllerRequest.STRICT)
+            return 'succeeded'
+        except rospy.ServiceException, e:
+            return 'aborted'
+
 
 # Door detector state
 class DetectDoorState(State):

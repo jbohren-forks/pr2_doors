@@ -1,9 +1,5 @@
 <launch>
 
-<!-- action interface to switch controllers -->
-  <node pkg="pr2_switch_controllers" type="switch_controllers.py" name="action_controller_switch" />
-
-
 <!-- tff controller -->
   <group ns="r_arm_cartesian_tff_controller" clear_params="true">
     <param name="type" type="string" value="tff_controller/TFFController" />

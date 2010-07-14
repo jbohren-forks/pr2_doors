@@ -71,7 +71,7 @@ class DetectDoorState(State):
         if not self.ac.wait_for_server(rospy.Duration(30)):
             rospy.logerr('Door detector failed to connect to action server')
     def enter(self):
-        if self.ac.send_goal_and_wait(DoorGoal(self.userdata.door), rospy.Duration(30), rospy.Duration(30)):
+        if self.ac.send_goal_and_wait(DoorGoal(self.userdata.door), rospy.Duration(30), rospy.Duration(30)) == GoalStatus.SUCCEEDED:
             result = self.ac.get_result() 
             self.userdata.door = result.door
             if self.userdata.door.latch_state == Door.UNLATCHED:

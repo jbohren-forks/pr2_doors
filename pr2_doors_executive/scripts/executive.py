@@ -162,6 +162,10 @@ def main():
                     start_controllers = ["r_arm_cartesian_tff_controller"]),
                 { 'succeeded':'TURN_HANDLE' })
 
+        # @TODO: When door is locked, unlatch_handle still returns success, but the resulting door message
+        # contains the information that the door is locked. So the outcome of the TURN_HANDLE state 
+        # should depend on the information in the action result.
+
         StateMachine.add('TURN_HANDLE',
                 SimpleActionState('unlatch_handle',DoorAction,goal_slots = ['door']),
                 { 'succeeded':'OPEN_DOOR'})

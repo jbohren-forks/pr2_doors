@@ -24,7 +24,7 @@
     <param name="pos_trans/d" value="0.0" />
     <param name="pos_trans/i_clamp" value="1.0" />
 
-    <param name="pos_rot/p" value="0.5" />
+    <param name="pos_rot/p" value="50.0" />
     <param name="pos_rot/i" value="0.1" />
     <param name="pos_rot/d" value="0.0" />
     <param name="pos_rot/i_clamp" value="0.2" />

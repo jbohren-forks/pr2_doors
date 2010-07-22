@@ -153,7 +153,7 @@ void UnlatchHandleAction::execute(const  door_msgs::DoorGoalConstPtr& goal)
     }
 
     // detect when door is locked
-    if (fabs(tff_handle_.value.angular.x) > 3.5 && fabs(tff_state_.angular.x < M_PI/6.0)){
+    if (fabs(tff_handle_.value.angular.x) > 3.5 && fabs(tff_state_.angular.x) < M_PI/6.0){
       tff_pub_.publish(tff_stop_);
       lock.unlock();
       ROS_INFO("UnlatchHandleAction: Door is locked");

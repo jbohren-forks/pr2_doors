@@ -34,6 +34,7 @@ import rospy
 
 from actionlib import *
 from actionlib.msg import *
+import smach
 from smach import *
 from executive_python_msgs.msg import *
 from door_msgs.msg import *
@@ -55,41 +56,23 @@ class SwitchControllersState(State):
         self.start_list = start_controllers
         self.stop_list = stop_controllers
 
-    def enter(self):
+    def execute(self,ud):
         try:
             self.srv(self.start_list, self.stop_list, SwitchControllerRequest.STRICT)
             return 'succeeded'
         except rospy.ServiceException, e:
             return 'aborted'
 
-
-# Door detector state
-class DetectDoorState(State):
-    def __init__(self, action_name):
-        State.__init__(self, outcomes=['unlatched', 'closed', 'aborted'])
-        self.ac = SimpleActionClient(action_name, DoorAction)
-        if not self.ac.wait_for_server(rospy.Duration(30)):
-            rospy.logerr('Door detector failed to connect to action server')
-    def enter(self):
-        if self.ac.send_goal_and_wait(DoorGoal(self.userdata.door), rospy.Duration(30), rospy.Duration(30)) == GoalStatus.SUCCEEDED:
-            result = self.ac.get_result() 
-            self.userdata.door = result.door
-            if self.userdata.door.latch_state == Door.UNLATCHED:
-                return 'unlatched'
-            else:
-                return 'closed'
-        return 'aborted'
-
 def main():
     rospy.init_node('doors_executive')
 
-
-
     # construct state machine
-    sm = StateMachine(['succeeded', 'aborted', 'preempted'])
+    sm = StateMachine(
+            ['succeeded', 'aborted', 'preempted'],
+            input_keys = ['door'],
+            output_keys = ['door'])
 
     with sm:
-        StateMachine.share_parent_userdata()
         StateMachine.add('INIT_CONTROLLERS',
                 SwitchControllersState(
                     stop_controllers = ["r_arm_cartesian_tff_controller"],
@@ -100,8 +83,19 @@ def main():
                 { 'succeeded': 'DETECT_DOOR',
                     'aborted': 'TUCK_ARMS'})
         
+        @smach.cb_interface(outcomes=['unlatched', 'closed', 'aborted'])
+        def detect_door_result_cb(ud, status, result):
+            if status == GoalStatus.SUCCEEDED:
+                if result.door.latch_state == Door.UNLATCHED:
+                    return 'unlatched'
+                else:
+                    return 'closed'
+            return 'aborted'
         StateMachine.add('DETECT_DOOR',
-                DetectDoorState('detect_door'),
+                SimpleActionState('detect_door',DoorAction,
+                    goal_slots = ['door'],
+                    result_slots = ['door'],
+                    result_cb = detect_door_result_cb),
                 { 'closed': 'DETECT_HANDLE',
                     'unlatched': 'aborted',
                     'aborted': 'DETECT_DOOR'})
@@ -112,6 +106,7 @@ def main():
                 { 'succeeded': 'APPROACH_DOOR',
                     'aborted': 'DETECT_HANDLE'})
 
+        @smach.cb_interface(input_keys=['door'])
         def get_approach_goal(userdata, goal):
             target_pose = door_functions.get_robot_pose(userdata.door, -0.7)
             return MoveBaseGoal(target_pose)
@@ -147,6 +142,7 @@ def main():
                 { 'succeeded': 'APPROACH_DETECT_POSE',
                     'aborted': 'RECOVER_TUCK_ARMS'})
 
+        @smach.cb_interface(input_keys=['door'])
         def get_approach_detect_goal(userdata, goal):
             target_pose = door_functions.get_robot_pose(userdata.door, -1.5)
             return MoveBaseGoal(target_pose)
@@ -177,16 +173,21 @@ def main():
                 resources = )
         """
 
-        open_door = Concurrence(['succeeded','aborted','preempted'],default_outcome=['aborted'])
-        with open_door:
-            Concurrence.set_retrieve_ud_keys(['door'])
-            Concurrence.add('MOVE_THROUGH',SimpleActionState('move_base_door',DoorAction, goal_slots = ['door']))
-            Concurrence.add_slave('OPEN_DOOR',SimpleActionState('open_door',DoorAction, goal_slots = ['door']))
-            Concurrence.add_outcome_map('succeeded',{'MOVE_THROUGH':'succeeded'})
-            Concurrence.add_outcome_map('aborted',{'MOVE_THROUGH':'aborted'})
-            Concurrence.add_outcome_map('preempted',{'MOVE_THROUGH':'preempted'})
-        StateMachine.add('OPEN_DOOR',open_door,
+        open_door_cc = Concurrence(
+                ['succeeded','aborted','preempted'],
+                default_outcome = 'aborted',
+                input_keys = ['door'],
+                output_keys = ['door'],
+                child_termination_cb = lambda so: True,
+                outcome_map = {
+                    'succeeded':{'MOVE_THROUGH':'succeeded'},
+                    'aborted':{'MOVE_THROUGH':'aborted'},
+                    'preempted':{'MOVE_THROUGH':'preempted'}})
+        StateMachine.add('OPEN_DOOR',open_door_cc,
                 { 'succeeded':'TFF_STOP' })
+        with open_door_cc:
+            Concurrence.add('MOVE_THROUGH',SimpleActionState('move_base_door',DoorAction, goal_slots = ['door']))
+            Concurrence.add('PUSH_DOOR',SimpleActionState('open_door',DoorAction, goal_slots = ['door']))
 
         StateMachine.add('TFF_STOP',
                 SwitchControllersState(
@@ -224,15 +225,20 @@ def main():
     intro_server = IntrospectionServer('doorman',sm,'/DOORMAN')
     intro_server.start()
 
-    action_server_acquire = ActionServerWrapper('move_through_door', DoorAction,
-                                                wrapped_container = sm,
-                                                goal_slots_map = {'door': 'door'},
-                                                succeeded_outcomes = ['succeeded'],
-                                                aborted_outcomes = ['aborted'],
-                                                preempted_outcomes = ['preeempted'])
-    action_server_acquire.run_server()
+    if 'run' in  rospy.myargv():
+        sm_thread = threading.Thread(target=sm.execute)
+        sm_thread.start()
+    else:
+        asw = ActionServerWrapper('move_through_door', DoorAction,
+                wrapped_container = sm,
+                goal_slots_map = {'door': 'door'},
+                succeeded_outcomes = ['succeeded'],
+                aborted_outcomes = ['aborted'],
+                preempted_outcomes = ['preeempted'])
+        asw.run_server()
 
     rospy.spin()
+
     intro_server.stop()
 
 if __name__ == '__main__':

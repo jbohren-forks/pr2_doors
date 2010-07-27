@@ -83,9 +83,12 @@ def main():
                 { 'succeeded': 'DETECT_DOOR',
                     'aborted': 'TUCK_ARMS'})
         
-        @smach.cb_interface(outcomes=['unlatched', 'closed', 'aborted'])
+        @smach.cb_interface(
+                outcomes=['unlatched', 'closed', 'aborted'],
+                output_keys=['door'])
         def detect_door_result_cb(ud, status, result):
             if status == GoalStatus.SUCCEEDED:
+                ud.door = result.door
                 if result.door.latch_state == Door.UNLATCHED:
                     return 'unlatched'
                 else:
@@ -94,15 +97,19 @@ def main():
         StateMachine.add('DETECT_DOOR',
                 SimpleActionState('detect_door',DoorAction,
                     goal_slots = ['door'],
-                    result_slots = ['door'],
                     result_cb = detect_door_result_cb),
                 { 'closed': 'DETECT_HANDLE',
                     'unlatched': 'aborted',
                     'aborted': 'DETECT_DOOR'})
 
         # Sequence for opening the door with the handle
+        @smach.cb_interface(output_keys=['door'])
+        def detect_handle_result_cb(ud, status, result):
+            if status == GoalStatus.SUCCEEDED:
+                ud.door = result.door
         StateMachine.add('DETECT_HANDLE',
-                SimpleActionState('detect_handle', DoorAction, goal_slots = ['door'], result_slots = ['door']),
+                SimpleActionState('detect_handle', DoorAction,
+                    goal_slots = ['door'],
                 { 'succeeded': 'APPROACH_DOOR',
                     'aborted': 'DETECT_HANDLE'})
 

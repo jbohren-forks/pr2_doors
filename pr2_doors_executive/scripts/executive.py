@@ -109,7 +109,8 @@ def main():
                 ud.door = result.door
         StateMachine.add('DETECT_HANDLE',
                          SimpleActionState('detect_handle', DoorAction,
-                                           goal_slots = ['door']),
+                                           goal_slots = ['door'],
+                                           result_cb=detect_handle_result_cb),
                          { 'succeeded': 'APPROACH_DOOR',
                            'aborted': 'DETECT_HANDLE'})
 

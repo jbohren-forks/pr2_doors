@@ -108,10 +108,10 @@ def main():
             if status == GoalStatus.SUCCEEDED:
                 ud.door = result.door
         StateMachine.add('DETECT_HANDLE',
-                SimpleActionState('detect_handle', DoorAction,
-                    goal_slots = ['door'],
-                { 'succeeded': 'APPROACH_DOOR',
-                    'aborted': 'DETECT_HANDLE'})
+                         SimpleActionState('detect_handle', DoorAction,
+                                           goal_slots = ['door']),
+                         { 'succeeded': 'APPROACH_DOOR',
+                           'aborted': 'DETECT_HANDLE'})
 
         @smach.cb_interface(input_keys=['door'])
         def get_approach_goal(userdata, goal):

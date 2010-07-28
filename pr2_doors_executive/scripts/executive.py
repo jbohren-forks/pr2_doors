@@ -36,7 +36,7 @@ from actionlib import *
 from actionlib.msg import *
 import smach
 from smach import *
-import smach_ros
+from smach_ros import *
 from door_msgs.msg import *
 from move_base_msgs.msg import *
 from pr2_common_action_msgs.msg import *

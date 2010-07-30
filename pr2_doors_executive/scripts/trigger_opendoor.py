@@ -64,9 +64,7 @@ def main():
     print 'Waiting for open door action server'
     ac.wait_for_server()
     print 'Sending goal to open door action server'
-    ac.send_goal(door)
-    print 'Goal sent'
-    rospy.sleep(2.0)
+    ac.send_goal_and_wait(door, rospy.Duration(500.0), rospy.Duration(2.0))
     
 if __name__ == '__main__':
     main()

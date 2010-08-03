@@ -38,7 +38,7 @@
 #include "pr2_msgs/SetPeriodicCmd.h"
 
 //Actions
-#include "pr2_laser_snapshotter/BuildCloudAngleAction.h"
+#include "pr2_laser_snapshotter/TiltLaserSnapshotAction.h"
 #include "actionlib/server/simple_action_server.h"
 
 // Messages
@@ -64,7 +64,7 @@ using namespace std;
 class PointCloudSrv
 {
 private:
-  typedef actionlib::SimpleActionServer<BuildCloudAngleAction> Server;
+  typedef actionlib::SimpleActionServer<TiltLaserSnapshotAction> Server;
   ros::Time laser_time_;
   boost::mutex laser_mutex_;
   ros::Subscriber sub_;
@@ -81,7 +81,7 @@ public:
     cloud_server_.start();
   }
 
-  void buildSingleSweepCloud(const BuildCloudAngleGoalConstPtr& goal)
+  void buildSingleSweepCloud(const TiltLaserSnapshotGoalConstPtr& goal)
   {
     // send command to tilt laser scanner
     pr2_msgs::SetPeriodicCmd::Request scan_req;
@@ -94,7 +94,7 @@ public:
     {
       std::string error = "PointCloudSrv: error setting laser scanner periodic command";
       ROS_ERROR("%s", error.c_str());
-      cloud_server_.setAborted(BuildCloudAngleResult(), error);
+      cloud_server_.setAborted(TiltLaserSnapshotResult(), error);
       return;
     }
     else
@@ -110,7 +110,7 @@ public:
       if (ros::Time::now() > begin_time + Duration().fromSec(goal->duration) + timeout){
         std::string error = "PointCloudSrv: Timeout waiting for laser scan to come in";
         ROS_ERROR("%s", error.c_str());
-        cloud_server_.setAborted(BuildCloudAngleResult(), error);
+        cloud_server_.setAborted(TiltLaserSnapshotResult(), error);
         return;
       }
       laser_lock.unlock();
@@ -129,7 +129,7 @@ public:
     else
       ROS_INFO("PointCloudSrv: received point cloud of size %d from point cloud assembler", (int)assembler_res.cloud.points.size());
 
-    BuildCloudAngleResult res;
+    TiltLaserSnapshotResult res;
     res.cloud = assembler_res.cloud;
     cloud_server_.setSucceeded(res, "Received a point cloud from the assembler.");
     return;

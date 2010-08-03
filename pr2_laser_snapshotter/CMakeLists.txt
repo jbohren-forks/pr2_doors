@@ -21,7 +21,7 @@ set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 rosbuild_genmsg()
 
 rosbuild_add_executable(pr2_laser_snapshotter src/pr2_laser_snapshotter.cpp)
-rosbuild_add_executable(point_cloud_srv src/point_cloud_srv.cpp)
+rosbuild_add_executable(pr2_laser_snapshotter_action src/pr2_laser_snapshotter_action.cpp)
 
 # Needed to run rostests
 rosbuild_add_executable(dummy_scan_producer test/dummy_scan_producer.cpp)

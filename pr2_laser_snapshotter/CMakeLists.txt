@@ -9,14 +9,16 @@ include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
 #  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
 
 #set(ROS_BUILD_TYPE RelWithDebInfo)
+rosbuild_find_ros_package(actionlib_msgs)
+include(${actionlib_msgs_PACKAGE_PATH}/cmake/actionbuild.cmake)
+genaction()
 
 rosbuild_init()
 
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
-# rosbuild_genmsg()
-rosbuild_gensrv()
+rosbuild_genmsg()
 
 rosbuild_add_executable(pr2_laser_snapshotter src/pr2_laser_snapshotter.cpp)
 rosbuild_add_executable(point_cloud_srv src/point_cloud_srv.cpp)

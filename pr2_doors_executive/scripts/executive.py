@@ -173,13 +173,6 @@ def main():
         StateMachine.add('TURN_HANDLE',
                 SimpleActionState('unlatch_handle',DoorAction,goal_slots = ['door']),
                 { 'succeeded':'OPEN_DOOR'})
-        """
-        StateMachine.add(
-                label = 'TURN_HANDLE',
-                state = SimpleActionState('unlatch_handle',DoorAction,goal_slots = ['door']),
-                outcomes = { 'succeeded':'OPEN_DOOR'},
-                resources = )
-        """
 
         open_door_cc = Concurrence(
                 ['succeeded','aborted','preempted'],

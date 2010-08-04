@@ -15,6 +15,8 @@ installed: $(SOURCE_DIR)/unpacked Makefile
 	else\
 	  cd build/ann_1.1.1 && make linux-shared-g++; \
 	fi
+	cp build/ann_1.1.1/include . -r
+	cp build/ann_1.1.1/lib . -r
 	touch installed
 clean: wipe
 wipe:

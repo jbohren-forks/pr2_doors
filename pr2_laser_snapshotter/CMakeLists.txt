@@ -19,6 +19,7 @@ set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 rosbuild_genmsg()
+rosbuild_gensrv()
 
 rosbuild_add_executable(pr2_laser_snapshotter src/pr2_laser_snapshotter.cpp)
 rosbuild_add_executable(pr2_laser_snapshotter_action src/pr2_laser_snapshotter_action.cpp)

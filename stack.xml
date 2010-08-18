@@ -7,7 +7,7 @@
   <depend stack="common" /> <!-- actionlib, pluginlib -->
   <depend stack="common_msgs" /> <!-- sensor_msgs, actionlib_msgs, geometry_msgs, diagnostic_msgs -->
   <depend stack="diagnostics" /> <!-- diagnostic_updater -->
-  <depend stack="executive_python" /> <!-- smach -->
+  <depend stack="executive_smach" /> <!-- smach_ros, smach -->
   <depend stack="geometry" /> <!-- tf, kdl, angles -->
   <depend stack="image_pipeline" /> <!-- stereo_msgs -->
   <depend stack="laser_pipeline" /> <!-- laser_assembler -->
@@ -16,7 +16,7 @@
   <depend stack="pr2_common" /> <!-- pr2_machine, pr2_msgs -->
   <depend stack="pr2_common_actions" /> <!-- joint_trajectory_generator, pr2_common_action_msgs, pr2_arm_move_ik -->
   <depend stack="pr2_controllers" /> <!-- control_toolbox, pr2_controllers_msgs -->
-  <depend stack="pr2_mechanism" /> <!-- pr2_controller_manager, pr2_mechanism_model, realtime_tools, pr2_controller_interface -->
+  <depend stack="pr2_mechanism" /> <!-- pr2_mechanism_msgs, pr2_controller_manager, pr2_mechanism_model, realtime_tools, pr2_controller_interface -->
   <depend stack="pr2_navigation" /> <!-- pr2_navigation_teleop, pr2_navigation_perception, pr2_navigation_local -->
   <depend stack="ros" /> <!-- std_srvs, std_msgs, roscpp -->
   <depend stack="vision_opencv" /> <!-- opencv2, cv_bridge -->

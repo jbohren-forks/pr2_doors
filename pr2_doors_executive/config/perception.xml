@@ -10,7 +10,7 @@
     <param name="fixed_frame" type="string" value="odom_combined" />
     <param name="downsample_factor" type="int" value="1" />
   </node>
-  <node pkg="pr2_laser_snapshotter" type="point_cloud_srv" name="point_cloud_srv" />
+  <node pkg="pr2_laser_snapshotter" type="pr2_laser_snapshotter_action" name="point_cloud_srv" />
 
   <!-- door and door handle detector -->
   <include file="$(find door_handle_detector)/launch/door_handle_detector.xml" />

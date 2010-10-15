@@ -63,7 +63,8 @@ DetectHandleAction::DetectHandleAction(tf::TransformListener& tf):
   tf_(tf),
   action_server_(ros::NodeHandle(), 
 		 "detect_handle", 
-		 boost::bind(&DetectHandleAction::execute, this, _1))
+		 boost::bind(&DetectHandleAction::execute, this, _1)),
+  laserSnapshotActionClient_("point_cloud_action/single_sweep_cloud")
 {
   NodeHandle node;
   pub_ = node.advertise<pr2_controllers_msgs::PointHeadActionGoal>("head_traj_controller/point_head_action/goal",10);
@@ -245,24 +246,33 @@ bool DetectHandleAction::laserDetection(const door_msgs::Door& door_in,
 
   // gets a point cloud from the point_cloud_srv
   if (action_server_.isPreemptRequested()) return false;
+
   ROS_INFO("get a point cloud from the door");
-  pr2_laser_snapshotter::BuildCloudAngle::Request req_pointcloud;
-  pr2_laser_snapshotter::BuildCloudAngle::Response res_pointcloud;
-  req_pointcloud.angle_begin = -atan2(handle_top - laser_height, dist);
-  req_pointcloud.angle_end = atan2(laser_height - handle_bottom, dist);
-  req_pointcloud.duration = scan_height/scan_speed;
-  if (!ros::service::call("point_cloud_srv/single_sweep_cloud", req_pointcloud, res_pointcloud)){
-    ROS_ERROR("failed to get point cloud for door detection");
+  pr2_laser_snapshotter::TiltLaserSnapshotGoal goalMsg;
+
+  laserSnapshotActionClient_.waitForServer();
+
+  goalMsg.angle_begin = -atan2(handle_top - laser_height, dist);
+  goalMsg.angle_end =atan2(laser_height - handle_bottom, dist);
+  goalMsg.duration = scan_height/scan_speed;
+
+  laserSnapshotActionClient_.sendGoal(goalMsg);
+  laserSnapshotActionClient_.waitForResult();
+
+  if (laserSnapshotActionClient_.getState() != actionlib::SimpleClientGoalState::SUCCEEDED)
+  {
+    ROS_ERROR("DetectHandleAction: failed to get point cloud for handle detection");
     return false;
   }
+  pr2_laser_snapshotter::TiltLaserSnapshotResultConstPtr res_pointcloud = laserSnapshotActionClient_.getResult();
 
   // detect handle
   if (action_server_.isPreemptRequested()) return false;
-  ROS_INFO("start detecting the handle using the laser, in a pointcloud of size %u", (unsigned int)res_pointcloud.cloud.points.size());
+  ROS_INFO("start detecting the handle using the laser, in a pointcloud of size %u", (unsigned int)res_pointcloud->cloud.points.size());
   door_handle_detector::DoorsDetectorCloud::Request  req_handledetect;
   door_handle_detector::DoorsDetectorCloud::Response res_handledetect;
   req_handledetect.door = door_in;
-  req_handledetect.cloud = res_pointcloud.cloud;
+  req_handledetect.cloud = res_pointcloud->cloud;
   if (!ros::service::call("handle_detector_cloud", req_handledetect, res_handledetect)){
     ROS_ERROR("failed to detect a handle using the laser");
     return false;

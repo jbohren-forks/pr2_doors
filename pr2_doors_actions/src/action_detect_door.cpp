@@ -40,6 +40,8 @@
 #include <pr2_laser_snapshotter/BuildCloudAngle.h>
 //#include <pr2_robot_actions/set_hokuyo_mode.h>
 #include "pr2_doors_actions/action_detect_door.h"
+#include <pr2_laser_snapshotter/TiltLaserSnapshotAction.h>
+#include <actionlib/client/simple_action_client.h>
 
 
 using namespace ros;
@@ -57,7 +59,8 @@ DetectDoorAction::DetectDoorAction(tf::TransformListener& tf):
   tf_(tf),
   action_server_(ros::NodeHandle(), 
 		 "detect_door", 
-		 boost::bind(&DetectDoorAction::execute, this, _1))
+		 boost::bind(&DetectDoorAction::execute, this, _1)),
+  laserSnapshotActionClient_("point_cloud_action/single_sweep_cloud")
 {};
 
 
@@ -140,24 +143,32 @@ bool DetectDoorAction::laserDetection(const door_msgs::Door& door_in, door_msgs:
   if (action_server_.isPreemptRequested()) return false;
 
   ROS_INFO("DetectDoorAction: get a point cloud from the door");
-  pr2_laser_snapshotter::BuildCloudAngle::Request req_pointcloud;
-  pr2_laser_snapshotter::BuildCloudAngle::Response res_pointcloud;
-  req_pointcloud.angle_begin = -atan2(door_top - laser_height, dist);
-  req_pointcloud.angle_end = atan2(laser_height - door_bottom, dist);
-  req_pointcloud.duration = 10.0;
-  if (!ros::service::call("point_cloud_srv/single_sweep_cloud", req_pointcloud, res_pointcloud)){
+  pr2_laser_snapshotter::TiltLaserSnapshotGoal goalMsg;
+
+  goalMsg.angle_begin = -atan2(door_top - laser_height, dist);
+  goalMsg.angle_end = atan2(laser_height - door_bottom, dist);
+  goalMsg.duration = 10.0;
+
+
+  laserSnapshotActionClient_.waitForServer();
+  laserSnapshotActionClient_.sendGoal(goalMsg);
+  laserSnapshotActionClient_.waitForResult();
+
+  if (laserSnapshotActionClient_.getState() != actionlib::SimpleClientGoalState::SUCCEEDED)
+  {
     ROS_ERROR("DetectDoorAction: failed to get point cloud for door detection");
     return false;
   }
+  pr2_laser_snapshotter::TiltLaserSnapshotResultConstPtr res_pointcloud = laserSnapshotActionClient_.getResult();
 
   // detect door
   if (action_server_.isPreemptRequested()) return false;
 
-  ROS_INFO("DetectDoorAction: detect the door in a pointcloud of size %u", (unsigned int)res_pointcloud.cloud.points.size());
+  ROS_INFO("DetectDoorAction: detect the door in a pointcloud of size %u", (unsigned int)res_pointcloud->cloud.points.size());
   door_handle_detector::DoorsDetectorCloud::Request  req_doordetect;
   door_handle_detector::DoorsDetectorCloud::Response res_doordetect;
   req_doordetect.door = door_in;
-  req_doordetect.cloud = res_pointcloud.cloud;
+  req_doordetect.cloud = res_pointcloud->cloud;
 
   if (!ros::service::call("doors_detector_cloud", req_doordetect, res_doordetect)){
     ROS_ERROR("DetectDoorAction: failed to detect a door");

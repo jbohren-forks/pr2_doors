@@ -42,7 +42,9 @@
 #include <door_msgs/Door.h>
 #include <door_msgs/DoorGoal.h>
 #include <door_msgs/DoorAction.h>
+#include <pr2_laser_snapshotter/TiltLaserSnapshotAction.h>
 #include <actionlib/server/simple_action_server.h>
+#include <actionlib/client/simple_action_client.h>
 #include <tf/transform_listener.h>
 
 namespace door_handle_detector{
@@ -62,6 +64,8 @@ private:
   bool laserDetection(const door_msgs::Door& door_in, door_msgs::Door& door_out);
   tf::TransformListener& tf_;
   actionlib::SimpleActionServer<door_msgs::DoorAction> action_server_;
+  actionlib::SimpleActionClient<pr2_laser_snapshotter::TiltLaserSnapshotAction> laserSnapshotActionClient_;
+
   door_msgs::DoorResult action_result_;
 
 };

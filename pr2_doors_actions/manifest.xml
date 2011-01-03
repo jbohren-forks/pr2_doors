@@ -34,9 +34,9 @@
   <depend package="base_local_planner"/>
   <depend package="laser_assembler"/>
   <depend package="pr2_laser_snapshotter"/>
- <export>
-    <cpp cflags="-I${prefix}/msg/cpp -I${prefix}/srv/cpp -I${prefix}/include" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib "/>
- </export>
+  <export>
+    <cpp cflags="-I${prefix}/include" lflags="-Wl,-rpath,${prefix}/lib -L${prefix}/lib "/>
+  </export>
 
 
   <platform os="ubuntu" version="9.04"/>

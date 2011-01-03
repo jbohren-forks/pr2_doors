@@ -18,7 +18,7 @@
   <depend package="pluginlib" />
 
   <export>
-    <cpp cflags="-I${prefix}/include -I${prefix}/msg/cpp"
+    <cpp cflags="-I${prefix}/include"
          lflags="-Wl,-rpath,${prefix}/lib/ -L${prefix}/lib -ltff_controller" />
    <pr2_controller_interface plugin="${prefix}/controller_plugins.xml" />
   </export>

@@ -9,7 +9,7 @@
   <depend package="geometry_msgs"/>
   <depend package="actionlib_msgs"/>
   <export>
-    <cpp cflags="-I${prefix}/msg/cpp"/>
+    <cpp cflags=""/>
   </export>
   <platform os="ubuntu" version="9.04"/>
   <platform os="ubuntu" version="9.10"/>

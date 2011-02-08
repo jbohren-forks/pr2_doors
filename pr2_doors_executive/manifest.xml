@@ -9,7 +9,6 @@
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/pr2_doors_executive</url>
 
-  <depend package="willow_maps"/>
   <depend package="pr2_doors_actions"/>
   <depend package="door_handle_detector"/>
   <depend package="pr2_navigation_teleop"/>

@@ -43,8 +43,8 @@
 
 // ROS core
 #include <ros/ros.h>
-#include <roslib/Header.h>
-#include <mapping_msgs/PolygonalMap.h>
+#include <std_msgs/Header.h>
+#include <arm_navigation_msgs/PolygonalMap.h>
 
 // Most of the geometric routines that contribute to the door finding job are located here
 #include <door_handle_detector/geometric_helper.h>

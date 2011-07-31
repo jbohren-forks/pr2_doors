@@ -34,7 +34,7 @@
 
 using namespace std;
 using namespace door_msgs;
-using namespace arm_navigation_msgs;
+using namespace mapping_msgs;
 using namespace ros;
 using namespace door_handle_detector;
 using namespace pr2_doors_common;

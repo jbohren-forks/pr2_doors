@@ -1,6 +1,6 @@
 <stack>
   <description brief="pr2_doors">The pr2_doors stack provides the building blocks and integration to allow the PR2 to autonomously detect and open doors.</description>
-  <author>Maintained by Wim Meeussen</author>
+  <author>Wim Meeussen, John Hsu, Jon Bohren, Marius Muja</author>
   <license>BSD,LGPL</license>  
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/pr2_doors</url>

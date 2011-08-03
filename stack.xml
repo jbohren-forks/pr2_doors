@@ -16,7 +16,7 @@
   <depend stack="orocos_kinematics_dynamics" /> <!-- kdl -->
   <depend stack="pluginlib" /> <!-- pluginlib -->
   <depend stack="pr2_common" /> <!-- pr2_msgs, pr2_machine -->
-  <depend stack="pr2_common_action" /> <!-- joint_trajectory_generator, pr2_common_action_msgs, pr2_arm_move_ik -->
+  <depend stack="pr2_common_actions" /> <!-- joint_trajectory_generator, pr2_common_action_msgs, pr2_arm_move_ik -->
   <depend stack="pr2_controllers" /> <!-- control_toolbox, pr2_controllers_msgs -->
   <depend stack="pr2_mechanism" /> <!-- pr2_controller_manager, pr2_mechanism_model, pr2_controller_interface, realtime_tools, pr2_mechanism_msgs -->
   <depend stack="pr2_navigation" /> <!-- pr2_navigation_teleop, pr2_navigation_perception, pr2_navigation_local -->

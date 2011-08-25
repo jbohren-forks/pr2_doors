@@ -53,17 +53,6 @@
     <remap from="inflated_obstacles" to="~inflated_obstacles" />
   </group>
 
-  <!-- Trajectory generator -->
-  <node pkg="joint_trajectory_generator" type="joint_trajectory_generator" output="screen" name="joint_trajectory_generator" ns="r_arm_controller">
-    <param name="max_acc" value="2.0" />
-    <param name="max_vel" value="2.5" />
-  </node>
-  <node pkg="joint_trajectory_generator" type="joint_trajectory_generator" output="screen" name="joint_trajectory_generator" ns="l_arm_controller">
-    <param name="max_acc" value="2.0" />
-    <param name="max_vel" value="2.5" />
-  </node>
-
-
   <!-- arm ik action server -->
   <node pkg="pr2_arm_move_ik" type="arm_ik" name="r_arm_ik" output="screen">
     <param name="joint_trajectory_action" value="r_arm_controller/joint_trajectory_generator" />
